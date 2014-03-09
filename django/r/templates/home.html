@@ -81,7 +81,7 @@
 
 {% block managers %}
     {% searchmanager id="search"
-        search="| sampleproductorders | r \"events=summary(events)\""|token_safe
+        search="| sampleproductorders"|token_safe
         preview=True
         required_field_list="*"
         status_buckets=300 %}
