@@ -1,0 +1,8 @@
+<nav>
+    <view name="home" default="true" />
+    <a name="home" href="/dj/redirector/r/home">Home</a>
+    <a href="http://www.r-project.org/">Documentation</a>
+    <collection label="Samples">
+        <a name="summary" href="/dj/redirector/r/summary">Summary Command</a>
+    </collection>
+</nav>

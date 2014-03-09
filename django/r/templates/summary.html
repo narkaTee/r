@@ -1,0 +1,57 @@
+{% extends "splunkdj:base_with_app_bar.html" %}
+
+{% load splunkmvc %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}splunkjs/css/dashboard.css" />
+{% endblock css %}
+
+{% block title %}
+    {{app_title}}
+{% endblock title %}
+
+{% block content %}
+    <div class="dashboard-body container-fluid main-section-body">
+        <div class="dashboard-row">
+            <div class="dashboard-header clearfix">
+                <h2>The 'Summary' Command</h2>
+            </div>
+        </div>
+        <div class="dashboard-row">
+            <div class="dashboard-cell" style="width: 100%;">
+                <div class="dashboard-panel">
+                    <div class="dashboard-element">
+                        <div class="panel-head">
+                            <h3>Get a comprehensive summary of the results of the regression analysis.</h3>
+                        </div>
+                        <div class="panel-body">
+                            <p>
+                                {% searchbar
+                                    id="example-searchbar"
+                                    managerid="example-search"
+                                    value="$searchquery$"|token_safe
+                                    timerange_earliest_time="$earlyval$"|token_safe
+                                    timerange_latest_time="$lateval$"|token_safe
+                                    default="| sampleproductorders | r \"events=summary(events)\"" %}
+                            </p>
+                            <p>
+                                {% table id="example-table" managerid="example-search" pageSize="100" %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content%}
+
+{% block managers %}
+    {% searchmanager id="example-search"
+        search="$searchquery$"|token_safe
+        earliest_time="$earlyval$"|token_safe
+        latest_time="$lateval$"|token_safe
+        preview=True
+        required_field_list="*"
+        status_buckets=300 %}
+{% endblock managers %}
