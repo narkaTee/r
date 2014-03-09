@@ -5,6 +5,7 @@ import os
 import subprocess
 import traceback
 import sys
+import platform
 
 try:
 
@@ -56,7 +57,17 @@ try:
         #    exit(0)
 
         #execute r subprocess
-        r_path = "/Library/Frameworks/R.framework/Versions/Current/Resources/bin/R"
+        system = platform.system()
+        if system == 'Windows':
+            r_path = 'C:\\Program Files\\R\\R-3.0.3\\bin\\R.exe'
+        if system == 'Darwin':
+            r_path = "/Library/Frameworks/R.framework/Versions/Current/Resources/bin/R"
+        else:
+            splunk.Intersplunk.outputResults(
+                splunk.Intersplunk.generateErrorResults('Unsupported operation system: %s' % system))
+            exit(0)
+            raise
+
         if not os.path.exists(r_path):
             splunk.Intersplunk.outputResults(
                 splunk.Intersplunk.generateErrorResults('Cannot find R executable at path %s' % r_path))
