@@ -34,6 +34,7 @@
                                     timerange_latest_time="$lateval$"|token_safe
                                     default="| sampleproductorders | r \"events=summary(events)\"" %}
                             </p>
+                            <p id="example-searcherror" style="color: red; display: none;"></p>
                             <p>
                                 {% table id="example-table" managerid="example-search" pageSize="100" %}
                             </p>
@@ -53,5 +54,36 @@
         latest_time="$lateval$"|token_safe
         preview=True
         required_field_list="*"
-        status_buckets=300 %}
+        status_buckets=300
+        %}
 {% endblock managers %}
+
+{% block js %}
+    <script type="text/javascript">
+        var deps = [
+            "splunkjs/ready!"
+        ];
+        require(deps, function(mvc) {
+            var search = splunkjs.mvc.Components.getInstance("example-search");
+            var showErrorMessages=function(properties){
+                var errorTag=$('#example-searcherror');
+                errorTag.hide().text('');
+                properties.content['messages'].forEach(function(msg){
+                    if(msg.type=='ERROR')
+                    {
+                        var text=errorTag.text();
+                        if(text.length>0){
+                            text+='\n';
+                        }
+                        text+=msg.text;
+                        errorTag.text(text);
+                        errorTag.show();
+                    }
+                });
+            };
+            search.on('search:error', showErrorMessages);
+            search.on('search:failed', showErrorMessages);
+            search.on('search:done', showErrorMessages);
+        });
+    </script>
+{% endblock js %}
