@@ -57,6 +57,10 @@ try:
 
         #execute r subprocess
         r_path = "/Library/Frameworks/R.framework/Versions/Current/Resources/bin/R"
+        if not os.path.exists(r_path):
+            splunk.Intersplunk.outputResults(
+                splunk.Intersplunk.generateErrorResults('Cannot find R executable at path %s' % r_path))
+            exit(0)
         command = r_path + " --vanilla" + " < " + script_filename + " > " + r_output_filename
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         output, error = process.communicate()
