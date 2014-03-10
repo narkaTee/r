@@ -16,3 +16,7 @@ production environment.
 Installation
 ---
 Will be available on apps.splunk.com ...
+
+It is required to download and install R from
+[http://www.r-project.org/](http://www.r-project.org/)
+before you can use the app.
