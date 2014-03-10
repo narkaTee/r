@@ -60,7 +60,7 @@ try:
         system = platform.system()
         if system == 'Windows':
             r_path = 'C:\\Program Files\\R\\R-3.0.3\\bin\\R.exe'
-        if system == 'Darwin':
+        elif system == 'Darwin':
             r_path = "/Library/Frameworks/R.framework/Versions/Current/Resources/bin/R"
         else:
             splunk.Intersplunk.outputResults(
