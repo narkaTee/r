@@ -37,6 +37,3 @@ export = system
 [commands/r]
 access = read : [ * ], write : [ admin, power ]
 export = system
-owner = nobody
-version = 6.0.1
-modtime = 1394355509.991977000
