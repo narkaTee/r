@@ -1,0 +1,33 @@
+{% extends "splunkdj:base_with_app_bar.html" %}
+
+{% load splunkmvc %}
+
+{% block title %}
+    {{app_title}}
+{% endblock title %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}splunkdj/setup.css" />
+    <style>
+        .splunkdj-setup-form {
+            max-width: 400px;
+            _width: inherit;
+            margin: 30px;
+        }
+    </style>
+{% endblock css %}
+
+{% block content %}
+    <form class="splunkdj-setup-form" method="post" action="">
+        <h2>Setup R Project</h2>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <p>
+            <input class="btn btn-primary" type="submit" value="Save" />
+            {% if configured %}
+                <a class="btn" href="{% url 'r:home' %}">Cancel</a>
+            {% endif %}
+        </p>
+    </form>
+    <div style="height: 30px;"></div>
+{% endblock content%}
