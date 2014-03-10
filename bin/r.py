@@ -45,9 +45,9 @@ try:
         #create script file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             script_filename = f.name
-            f.write('events <- read.csv("' + input_csv_filename + '")\n')
+            f.write('events <- read.csv("' + input_csv_filename.replace('\\','\\\\') + '")\n')
             f.write(r_snippet + '\n')
-            f.write('write.csv(events, file = "' + output_csv_filename + '")\n')
+            f.write('write.csv(events, file = "' + output_csv_filename.replace('\\','\\\\') + '")\n')
         #create r output file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             r_output_filename = f.name
@@ -59,7 +59,7 @@ try:
         #execute r subprocess
         system = platform.system()
         if system == 'Windows':
-            r_path = 'C:\\Program Files\\R\\R-3.0.3\\bin\\R.exe'
+            r_path = r'C:\Program Files\R\R-3.0.3\bin\R.exe'
         elif system == 'Darwin':
             r_path = "/Library/Frameworks/R.framework/Versions/Current/Resources/bin/R"
         else:
@@ -72,7 +72,7 @@ try:
             splunk.Intersplunk.outputResults(
                 splunk.Intersplunk.generateErrorResults('Cannot find R executable at path %s' % r_path))
             exit(0)
-        command = r_path + " --vanilla" + " < " + script_filename + " > " + r_output_filename
+        command = "\"" + r_path + "\" --vanilla" + " < \"" + script_filename + "\" > \"" + r_output_filename + "\""
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         output, error = process.communicate()
         if error is not None and len(error) > 0:
