@@ -16,6 +16,7 @@ try:
         splunk.Intersplunk.parseError("R snippet missing")
     r_snippet = sys.argv[1]
 
+    #read R library path from configuration
     r_path_config = cli.getConfStanza('r', 'paths')
     r_path = r_path_config.get('r')
     if not os.path.exists(r_path):
@@ -61,22 +62,6 @@ try:
 
         #with open(input_csv_filename, "r") as f:
         #    splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(f.read()))
-        #    exit(0)
-
-        #execute r subprocess
-        #system = platform.system()
-        #if system == 'Windows':
-        #    r_path = r'C:\Program Files\R\R-3.0.3\bin\R.exe'
-        #elif system == 'Darwin':
-        #    r_path = '/Library/Frameworks/R.framework/Versions/Current/Resources/bin/R'
-        #else:
-        #    splunk.Intersplunk.outputResults(
-        #        splunk.Intersplunk.generateErrorResults('Unsupported operation system: %s' % system))
-        #    exit(0)
-        #    raise
-        #if not os.path.exists(r_path):
-        #    splunk.Intersplunk.outputResults(
-        #        splunk.Intersplunk.generateErrorResults('Cannot find R executable at path %s' % r_path))
         #    exit(0)
 
         command = "\"" + r_path + "\" --vanilla" + " < \"" + script_filename + "\" > \"" + r_output_filename + "\""
