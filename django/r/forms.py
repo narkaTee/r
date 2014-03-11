@@ -18,9 +18,12 @@ class PathField(forms.CharField):
 
 
 class SetupForm(forms.Form):
-    email = PathField(
+    r_path = PathField(
         endpoint='configs/conf-r',
         entity='paths',
         field='r',
         label='Please specify the library installation path:',
+        #widget=forms.TextInput(attrs={
+        #    'style': 'width: 90%;'
+        #})
     )
