@@ -14,12 +14,44 @@
             _width: inherit;
             margin: 30px;
         }
+        .r-download-button {
+            margin: 10px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            background: rgb(22, 121, 195) linear-gradient(rgb(29, 137, 219), rgb(12, 96, 160));
+            text-shadow: rgba(0, 0, 0, 0.2) 0 1px 0;
+            color: rgb(255, 255, 255);
+            border: 1px solid rgba(0, 0, 0, 0.498039);
+            box-shadow: rgba(255, 255, 255, 0.2) 0 1px 0 0 inset;
+            font-family: ProximaNovaRgRegular, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: larger;
+            display: inline-block;
+            height: 20px;
+            line-height: 20px;
+        }
     </style>
 {% endblock css %}
 
 {% block content %}
     <form class="splunkdj-setup-form" method="post" action="">
-        <h2>Setup R Project</h2>
+        <h2>Setup the R Appadmin</h2>
+        <p>
+            This app depends R, which is an external library for statistical computation.
+            Please download and install the library for your OS:
+        </p>
+        <p>
+            <a class="r-download-button" href="http://cran.r-mirror.de/bin/macosx/R-latest.pkg">
+                Download For Mac
+            </a>
+            <a class="r-download-button" target="_blank" href="http://cran.r-mirror.de/bin/windows/base/release.htm">
+                Download For Windows
+            </a>
+        </p>
+        <p>
+            After installing, please check the installation path.
+            For Windows, it should be something like <code>C:\Program Files\R\R-3.0.3\bin\R.exe</code>.
+            For Mac OS X, it's probably <code>/Library/Frameworks/R.framework/Versions/Current/Resources/bin/R</code>.
+        </p>
         {% csrf_token %}
         {{ form.as_p }}
         <p>
