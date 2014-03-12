@@ -17,13 +17,19 @@ Status
 This project is in a very early alpha status and should not be used in a
 production environment.
 
+I Need your Help
+---
+I'm not a R expert, that's why I need your help
+to show more and better examples (see below).
+
+Please send me your feedback, questions and suggestions
+at [rfujara@splunk.com](rfujara@splunk.com).
+
+
 Features
 ---
 TODO
 
-Feedback
----
-TODO
 
 Installation
 ---

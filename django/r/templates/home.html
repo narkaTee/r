@@ -18,7 +18,7 @@
             </div>
         </div>
         <div class="dashboard-row">
-            <div class="dashboard-cell"  style="width: 100%;">
+            <div class="dashboard-cell"  style="width: 70%;">
                 <div class="dashboard-panel">
                     <div class="dashboard-element">
                         <div class="panel-head">
@@ -34,11 +34,35 @@
                             </p>
                             <p>
                                 <img src="{{STATIC_URL}}{{app_name}}/Introduction.svg"
-                                     style="width: 100%; max-height: 200px;">
+                                     style="width: 100%; max-height: 300px;">
                             </p>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="dashboard-cell"  style="width: 30%;">
+                <div class="dashboard-panel">
+                    <div class="dashboard-element">
+                        <div class="panel-head">
+                            <h3>I Need your Help</h3>
+                        </div>
+                        <div class="panel-body">
+                            <p>
+                                I'm not a R expert, that's why I need your help
+                                to show more and better examples (see below).
+                            </p>
+                            <p>
+                                Please send me your feedback, questions and suggestions
+                                at <a href="mailto:rfujara@splunk.com">rfujara@splunk.com</a>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-row">
+            <div class="dashboard-header clearfix">
+                <h2>Examples</h2>
             </div>
         </div>
         {% for s in samples %}
@@ -47,7 +71,7 @@
                     <div class="dashboard-panel">
                         <div class="dashboard-element">
                             <div class="panel-head">
-                                <h3>Example: {{s.name}} <a href="{{STATIC_URL}}../../en-US/app/r/search?q={{s.url|escape}}">(Edit)</a></h3>
+                                <h3>{{s.name}} <a href="{{STATIC_URL}}../../en-US/app/r/search?q={{s.url|escape}}">(Edit)</a></h3>
                             </div>
                             <div class="panel-body">
                                 <p>
