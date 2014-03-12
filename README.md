@@ -1,22 +1,32 @@
-Splunk R App
+R - Statistical Computing
 ===
-R is a free software environment for statistical computing.
-Here's a link the [R-Project](http://www.r-project.org/) website.
+This Splunk app provides a new Splunk search language
+command 'r' that allows passing data from Splunk to the R-Engine
+for calculation and then passing results back to Splunk for
+further computation or visualization.
 
-This app provides a Splunk search language command *r* that allows passing
-data from Splunk to R and then passing results back to Splunk.
+R is a language and environment for statistical computing. It
+provides a wide variety of statistical (linear and nonlinear
+modeling, classical statistical tests, time-series analysis,
+classification, clustering, ...) techniques, and is highly extensible.
 
-    | babynames | r "events=summary(events)"
+Here's a link the actual [R-Project](http://www.r-project.org/) website.
 
 Status
 ---
 This project is in a very early alpha status and should not be used in a
 production environment.
 
+Features
+---
+TODO
+
+Feedback
+---
+TODO
+
 Installation
 ---
-Will be available on apps.splunk.com ...
+This app is available on the [Splunk App Store](http://apps.splunk.com/app/1735/)
 
-It is required to download and install R from
-[http://www.r-project.org/](http://www.r-project.org/)
-before you can use the app.
+Or you can clone this repository to install the app manually.
