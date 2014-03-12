@@ -17,7 +17,7 @@ Status
 This project is in a very early alpha status and should not be used in a
 production environment.
 
-I Need your Help
+Contribute
 ---
 I'm not a R expert, that's why I need your help
 to show more and better examples (see below).
@@ -25,14 +25,20 @@ to show more and better examples (see below).
 Please send me your feedback, questions and suggestions
 at [rfujara@splunk.com](rfujara@splunk.com).
 
+You're also invited to clone/watch/star/fork the [GitHub project](https://github.com/rfsp/r),
+send Pull Requests or just create Issues.
 
 Features
 ---
 TODO
-
 
 Installation
 ---
 This app is available on the [Splunk App Store](http://apps.splunk.com/app/1735/)
 
 Or you can clone this repository to install the app manually.
+
+Platforms
+---
+Currently only Mac OS X and Windows are supported.
+Linux and Unix will be supported in future.
