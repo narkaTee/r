@@ -17,20 +17,20 @@ def home(request):
         "app_label": app_label,
         "samples": [
             {
-                "id": 'summarybabyname',
-                "url": '| babynames | '
-                       'table "First Name" '
-                       '| r "events=summary(events)"',
-                "name": "Summarize favorite baby names"
-            },
-            {
                 "id": 'summaryinternalsources',
                 "url": 'index=_internal '
                        '| head 1000 '
                        '| table source '
                        '| r "events=summary(events)"',
                 "name": "Summarize internal event sources"
-            }
+            },
+            {
+                "id": 'summarybabyname',
+                "url": '| babynames | '
+                       'table "First Name" '
+                       '| r "events=summary(events)"',
+                "name": "Summarize favorite baby names"
+            },
         ],
     }
 
