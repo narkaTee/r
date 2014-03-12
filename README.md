@@ -5,6 +5,8 @@ command 'r' that allows passing data from Splunk to the R-Engine
 for calculation and then passing results back to Splunk for
 further computation or visualization.
 
+![Overview](https://raw.github.com/rfsp/r/master/django/r/static/r/Introduction.svg)
+
 R is a language and environment for statistical computing. It
 provides a wide variety of statistical (linear and nonlinear
 modeling, classical statistical tests, time-series analysis,
