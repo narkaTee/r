@@ -5,35 +5,40 @@ from django.core.urlresolvers import reverse
 from splunkdj.setup import config_required
 from splunkdj.setup import create_setup_view_context
 
-app_name = "r"
-app_title = "The R Project"
+app_id = "r"
+app_label = "R - Statistical Computing"
 
-@render_to(app_name + ':home.html')
+@render_to(app_id + ':home.html')
 @login_required
 @config_required
 def home(request):
     return {
-        "app_name": app_name,
-        "app_title": app_title,
+        "app_id": app_id,
+        "app_label": app_label,
         "samples": [
-            {"url": "../summary/", "name": "Summary Command"}
+            {
+                "id": 'summarybabyname',
+                "url": '| babynames | '
+                       'table "First Name" '
+                       '| r "events=summary(events)"',
+                "name": "Summarize favorite baby names"
+            },
+            {
+                "id": 'summaryinternalsources',
+                "url": 'index=_internal '
+                       '| head 1000 '
+                       '| table source '
+                       '| r "events=summary(events)"',
+                "name": "Summarize internal event sources"
+            }
         ],
     }
 
-@render_to(app_name + ':summary.html')
-@login_required
-@config_required
-def summary(request):
-    return {
-        "app_name": app_name,
-        "app_title": app_title,
-    }
-
-@render_to(app_name + ':setup.html')
+@render_to(app_id + ':setup.html')
 @login_required
 def setup(request):
     return create_setup_view_context(
         request,
         SetupForm,
-        reverse(app_name + ':home')
+        reverse(app_id + ':home')
     )

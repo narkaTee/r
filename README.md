@@ -6,7 +6,7 @@ Here's a link the [R-Project](http://www.r-project.org/) website.
 This app provides a Splunk search language command *r* that allows passing
 data from Splunk to R and then passing results back to Splunk.
 
-    | sampleproductorders | r "events=summary(events)"
+    | babynames | r "events=summary(events)"
 
 Status
 ---

@@ -7,18 +7,18 @@
 {% endblock css %}
 
 {% block title %}
-    {{app_title}}
+    {{app_label}}
 {% endblock title %}
 
 {% block content %}
     <div class="dashboard-body container-fluid main-section-body">
         <div class="dashboard-row">
             <div class="dashboard-header clearfix">
-                <h2>The R Project</h2>
+                <h2>{{app_label}}</h2>
             </div>
         </div>
         <div class="dashboard-row">
-            <div class="dashboard-cell" style="width: 50%;">
+            <div class="dashboard-cell"  style="width: 100%;">
                 <div class="dashboard-panel">
                     <div class="dashboard-element">
                         <div class="panel-head">
@@ -26,63 +26,81 @@
                         </div>
                         <div class="panel-body">
                             <p>
-                                R is a free software environment for statistical computing.
-                                <a href="http://www.r-project.org/">http://www.r-project.org/</a>
+                                This app provides a new Splunk search language command <code>r</code> that allows passing data from Splunk to <a href="http://www.r-project.org/" target="_blank">R-Engine</a> for calculation and then passing results back to Splunk for further computation or visualization.
                             </p>
                             <p>
-                                This app provides a Splunk search language command <code>r</code> that allows passing
-                                data from Splunk to R and then passing results back to Splunk.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="dashboard-cell" style="width: 50%;">
-                <div class="dashboard-panel">
-                    <div class="dashboard-element">
-                        <div class="panel-head">
-                            <h3>Usage Examples</h3>
-                        </div>
-                        <div class="panel-body">
-                            <ul>
-                                {% for s in samples %}
-                                    <li><a href="{{s.url}}">{{s.name}}</a></li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="dashboard-row">
-            <div class="dashboard-cell" style="width: 100%;">
-                <div class="dashboard-panel">
-                    <div class="dashboard-element">
-                        <div class="panel-head">
-                            <h3>Sample Product Order Data</h3>
-                        </div>
-                        <div class="panel-body">
-                            <p>
-                                The following table shows some sample product orders.
-                                That data is used by the usage examples by adding
-                                <code>| sampleproductorders</code> at the beginning of the search query.
-                            </p>
-                            <p>
-                                {% table id="table" managerid="search" pageSize="100" %}
+                                <img src="{{STATIC_URL}}{{app_name}}/Introduction.svg"
+                                     style="width: 100%; max-height: 200px;">
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        {% for s in samples %}
+            <div class="dashboard-row">
+                <div class="dashboard-cell" style="width: 100%;">
+                    <div class="dashboard-panel">
+                        <div class="dashboard-element">
+                            <div class="panel-head">
+                                <h3>Example: {{s.name}} <a href="{{STATIC_URL}}../../en-US/app/r/search?q={{s.url|escape}}">(Edit)</a></h3>
+                            </div>
+                            <div class="panel-body">
+                                <p>
+                                    <code>{{s.url}}</code>
+                                </p>
+                                <p id="searcherror-{{s.id}}" style="color: red; display: none;"></p>
+                                <p>
+                                    {% table id="table-"|add:s.id managerid="search-"|add:s.id pageSize="10" %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 
 {% endblock content%}
 
 {% block managers %}
-    {% searchmanager id="search"
-        search="| sampleproductorders"|token_safe
-        preview=True
-        required_field_list="*"
-        status_buckets=300 %}
+    {% for s in samples %}
+        {% searchmanager id="search-"|add:s.id
+            search=""|add:s.url|token_safe
+            preview=True
+            required_field_list="*"
+            status_buckets=300 %}
+    {% endfor %}
 {% endblock managers %}
+
+{% block js %}
+    <script type="text/javascript">
+        var deps = [
+            "splunkjs/ready!"
+        ];
+        require(deps, function(mvc) {
+            {% for s in samples %}
+                var search = splunkjs.mvc.Components.getInstance("search-{{s.id}}");
+                var showErrorMessages=function(properties){
+                    var errorTag=$('#searcherror-{{s.id}}');
+                    errorTag.hide().text('');
+                    properties.content['messages'].forEach(function(msg){
+                        if(msg.type=='ERROR')
+                        {
+                            var text=errorTag.text();
+                            if(text.length>0){
+                                text+='\n';
+                            }
+                            text+=msg.text;
+                            errorTag.text(text);
+                            errorTag.show();
+                        }
+                    });
+                };
+                search.on('search:error', showErrorMessages);
+                search.on('search:failed', showErrorMessages);
+                search.on('search:done', showErrorMessages);
+            {% endfor %}
+        });
+    </script>
+{% endblock js %}
