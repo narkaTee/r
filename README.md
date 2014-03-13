@@ -34,6 +34,19 @@ Features
 ---
 TODO
 
+Usage
+---
+The command required at least one parameters. The actual R language script.
+To a minimal command syntax looks like this:
+
+    | r "<R script>"
+
+... for example:
+
+    | r "output = data.frame(Name=c('A','B','C'),Value=c(1,2,3))"
+
+TODO: implement additional parameters
+
 Installation
 ---
 This app is available on the [Splunk App Store](http://apps.splunk.com/app/1735/)
