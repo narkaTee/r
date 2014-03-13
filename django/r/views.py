@@ -17,18 +17,26 @@ def home(request):
         "app_label": app_label,
         "samples": [
             {
+                "id": 'buildsimpletable',
+                "url": '| r "output=data.frame('
+                       'Name=c(\'A\',\'B\',\'C\'),'
+                       'Value=c(1,2,3)'
+                       ')"',
+                "name": "Generate simple data table"
+            },
+            {
                 "id": 'summaryinternalsources',
                 "url": 'index=_internal '
                        '| head 1000 '
                        '| table source '
-                       '| r "events=summary(events)"',
+                       '| r "output=summary(input)"',
                 "name": "Summarize internal event sources"
             },
             {
                 "id": 'summarybabyname',
                 "url": '| babynames | '
                        'table "First Name" '
-                       '| r "events=summary(events)"',
+                       '| r "output=summary(input)"',
                 "name": "Summarize favorite baby names"
             },
         ],
