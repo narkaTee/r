@@ -79,6 +79,11 @@
                                 <h3>{{s.name}} <a href="{{STATIC_URL}}../../en-US/app/r/search?q={{s.url|escape}}">(Edit)</a></h3>
                             </div>
                             <div class="panel-body">
+                                {% if s.description %}
+                                    <p>
+                                       {{s.description|safe}}
+                                    </p>
+                                {% endif %}
                                 <p>
                                     <code>{{s.url}}</code>
                                 </p>
