@@ -1,4 +1,5 @@
 <nav>
-    <view name="home" default="true" />
+    <view name="home" default="true">Home</view>
     <a name="home" href="/dj/redirector/r/home">Home</a>
+    <a name="scripts" href="/dj/redirector/r/scripts">Scripts</a>
 </nav>

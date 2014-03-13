@@ -28,6 +28,10 @@ try:
         splunk.Intersplunk.parseError("Missing actual R script parameter")
     r_snippet = sys.argv[1]
 
+    #calculate some paths
+    bin_dir_path, _ = os.path.split(os.path.abspath(__file__))
+    scripts_dir_path = os.path.join(os.path.dirname(bin_dir_path), 'local', 'scripts')
+
     #read R library path from configuration
     r_path_config = cli.getConfStanza('r', 'paths')
     r_path = r_path_config.get('r')
@@ -68,9 +72,9 @@ try:
         with tempfile.NamedTemporaryFile(delete=False) as f:
             script_filename = f.name
             if input_csv_filename:
-                f.write('input <- read.csv("' + input_csv_filename.replace('\\','\\\\') + '")\n')
+                f.write('input <- read.csv("' + input_csv_filename.replace('\\', '\\\\') + '")\n')
             f.write(r_snippet + '\n')
-            f.write('write.csv(output, file = "' + output_csv_filename.replace('\\','\\\\') + '")\n')
+            f.write('write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n')
         #create r output file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             r_output_filename = f.name
@@ -80,7 +84,13 @@ try:
         #    exit(0)
 
         command = "\"" + r_path + "\" --vanilla" + " < \"" + script_filename + "\" > \"" + r_output_filename + "\""
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            cwd=scripts_dir_path
+        )
         output, error = process.communicate()
         if error is not None and len(error) > 0:
             splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(error))

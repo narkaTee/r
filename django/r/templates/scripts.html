@@ -1,0 +1,54 @@
+{% extends "splunkdj:base_with_app_bar.html" %}
+
+{% load splunkmvc %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}splunkjs/css/dashboard.css" />
+{% endblock css %}
+
+{% block title %}
+    {{ app_title }}
+{% endblock title %}
+
+{% block content %}
+    <div class="dashboard-body container-fluid main-section-body">
+        <div class="dashboard-row">
+            <div class="dashboard-header clearfix">
+                <h2>Manage Scripts</h2>
+            </div>
+        </div>
+        <div class="dashboard-row">
+            <div class="dashboard-cell"  style="width: 100%;">
+                <form enctype="multipart/form-data" method="post" action="">
+                    {% csrf_token %}
+                    {% for s in scripts %}
+                        <p>
+                            {{s.file_name}}
+                            {% if s.is_local %}
+                                <input type="submit" value="Delete" name="{{delete_script_action_prefix}}{{s.file_name}}">
+                            {% endif %}
+                        </p>
+                    {% endfor %}
+                    <p>
+                        Upload New Script:
+                        <input type="file" name="{{new_script_field_name}}">
+                        <input type="submit" value="Upload" name="{{upload_new_script_action}}">
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content%}
+
+{% block managers %}
+{% endblock managers %}
+
+{% block js %}
+    <script type="text/javascript">
+        var deps = [
+            "splunkjs/ready!"
+        ];
+        require(deps, function(mvc) {
+        });
+    </script>
+{% endblock js %}
