@@ -1,0 +1,4 @@
+rm r.spl
+cd ..
+tar -zcvf deploy/r.spl --exclude='deploy' --exclude='.git' --exclude='.git' --exclude='.gitignore' --exclude='README.md' -X .gitignore ./
+cd deploy
