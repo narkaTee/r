@@ -1,4 +1,26 @@
+#!/bin/sh
+
+# Cd to deploy directory
+cd "$(dirname "$0")"
+
+# Remove old package
 rm r.spl
-cd ..
-tar -zcvf deploy/r.spl --exclude='deploy' --exclude='.git' --exclude='.git' --exclude='.gitignore' --exclude='README.md' -X .gitignore ./
-cd deploy
+
+# Increase build number
+let BUILD=`cat .build`
+let BUILD=BUILD+1
+echo $BUILD > .build
+
+# Ask for new version number
+VERSION=`cat .version`
+read -p "Version ($VERSION): " NEW_VERSION
+[[ ! -z "$NEW_VERSION" ]] && VERSION="$NEW_VERSION"
+echo $VERSION > .version
+
+# Update app config
+perl -i -pe "s/^build\s*=.*/build = $BUILD/g" ../default/app.conf
+perl -i -pe "s/^version\s*=.*/version = $VERSION/g" ../default/app.conf
+
+cd ../..
+tar -zcf r/deploy/r.spl --exclude='r/deploy' --exclude='r/.git' --exclude='r/.git' --exclude='r/.gitignore' --exclude='README.md' -X r/.gitignore ./r
+
