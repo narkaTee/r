@@ -14,6 +14,19 @@ classification, clustering, ...) techniques, and is highly extensible.
 
 Here's a link the actual [R-Project](http://www.r-project.org/) website.
 
+Usage
+---
+The command required at least one parameters. The actual R language script.
+A minimal command syntax looks like this:
+
+    | r "<R script>"
+
+... for example:
+
+    | r "output = data.frame(Name=c('A','B','C'),Value=c(1,2,3))"
+
+TODO: implement additional parameters
+
 Status
 ---
 This project is in a very early alpha status and should not be used in a
@@ -33,19 +46,6 @@ send Pull Requests or just create Issues.
 Features
 ---
 TODO
-
-Usage
----
-The command required at least one parameters. The actual R language script.
-To a minimal command syntax looks like this:
-
-    | r "<R script>"
-
-... for example:
-
-    | r "output = data.frame(Name=c('A','B','C'),Value=c(1,2,3))"
-
-TODO: implement additional parameters
 
 Installation
 ---
