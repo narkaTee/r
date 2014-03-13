@@ -45,7 +45,9 @@ send Pull Requests or just create Issues.
 
 Features
 ---
-TODO
+- ...
+- Manage Custom Scripts (use the *source()* function to include them)
+- TODO
 
 Installation
 ---
