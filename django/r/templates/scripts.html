@@ -4,6 +4,23 @@
 
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}splunkjs/css/dashboard.css" />
+    <style type="text/css">
+        .table-root{
+            background-color: #ffffff;
+        }
+        table.scripts {
+            text-align: left;
+            width: 100%;
+        }
+        table.scripts th {
+            border-bottom: thin solid #757575;
+            padding: 1em;
+        }
+        table.scripts td {
+            border-bottom: thin solid #bababa;
+            padding: 1em;
+        }
+    </style>
 {% endblock css %}
 
 {% block title %}
@@ -17,26 +34,67 @@
                 <h2>Manage Scripts</h2>
             </div>
         </div>
-        <div class="dashboard-row">
-            <div class="dashboard-cell"  style="width: 100%;">
-                <form enctype="multipart/form-data" method="post" action="">
-                    {% csrf_token %}
-                    {% for s in scripts %}
-                        <p>
-                            {{s.file_name}}
-                            {% if s.is_local %}
-                                <input type="submit" value="Delete" name="{{delete_script_action_prefix}}{{s.file_name}}">
-                            {% endif %}
-                        </p>
-                    {% endfor %}
-                    <p>
-                        Upload New Script:
-                        <input type="file" name="{{new_script_field_name}}">
-                        <input type="submit" value="Upload" name="{{upload_new_script_action}}">
-                    </p>
-                </form>
+        <form enctype="multipart/form-data" method="post" action="">
+            {% csrf_token %}
+            <div class="dashboard-row">
+                <div class="dashboard-cell"  style="width: 100%;">
+                    <div class="dashboard-panel">
+                        <div class="dashboard-element">
+                            <div class="panel-body">
+                                <table class="scripts">
+                                    <tbody>
+                                        <tr>
+                                            <th style="width: 200px;">
+                                                Name
+                                            </th>
+                                            <th>
+                                                Actions
+                                            </th>
+                                        </tr>
+                                        {% for s in scripts %}
+                                            <tr>
+                                                <td>
+                                                    {{s.file_name}}
+                                                </td>
+                                                <td>
+                                                    {% if s.is_local %}
+                                                        <input type="submit" value="Delete" name="{{delete_script_action_prefix}}{{s.file_name}}">
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        {% if not scripts %}
+                                            <tr>
+                                                <td colspan="2" style="font-style: italic;">
+                                                    No Script uploaded
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+            <div class="dashboard-row">
+                <div class="dashboard-cell"  style="width: 100%;">
+                    <div class="dashboard-panel">
+                        <div class="dashboard-element">
+                            <div class="panel-head">
+                                <h3>Upload New Script</h3>
+                            </div>
+                            <div class="panel-body">
+                                <p>
+                                    <input type="file" name="{{new_script_field_name}}">
+                                    <input type="submit" value="Upload Now" name="{{upload_new_script_action}}">
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 {% endblock content%}
 
