@@ -5,15 +5,27 @@ import os
 import subprocess
 import traceback
 import sys
-import platform
 from splunk.clilib import cli_common as cli
 
 try:
     (isgetinfo, sys.argv) = splunk.Intersplunk.isGetInfo(sys.argv)
     if isgetinfo:
-        splunk.Intersplunk.outputInfo(False, False, False, False, None, True)
-    if len(sys.argv) != 2:
-        splunk.Intersplunk.parseError("R snippet missing")
+        splunk.Intersplunk.outputInfo(
+            streaming=False,  # because it only runs on a search head
+            generating=False,
+            retevs=False,
+            reqsop=False,
+            preop=None,
+            timeorder=True,
+            clear_req_fields=False,
+            req_fields=None
+        )
+
+    keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
+    #splunk.Intersplunk.parseError(",".join(keywords))
+
+    if len(sys.argv) < 2:
+        splunk.Intersplunk.parseError("Missing actual R script parameter")
     r_snippet = sys.argv[1]
 
     #read R library path from configuration
@@ -24,7 +36,6 @@ try:
             splunk.Intersplunk.generateErrorResults('Cannot find R executable at path \'%s\'' % r_path))
         exit(0)
 
-    # outputInfo automatically calls sys.exit()
     #read all the input data
     input_data = splunk.Intersplunk.readResults()
 
@@ -35,6 +46,8 @@ try:
             if not key in fieldnames:
                 fieldnames.add(key)
     fieldnames = list(fieldnames)
+    if len(fieldnames) == 0:
+        fieldnames = None
 
     input_csv_filename = None
     output_csv_filename = None
@@ -42,20 +55,22 @@ try:
     r_output_filename = None
     try:
         #create CSV input file
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            input_csv_filename = f.name
-            writer = csv.DictWriter(f, fieldnames=list(fieldnames))
-            writer.writeheader()
-            writer.writerows(input_data)
+        if fieldnames:
+            with tempfile.NamedTemporaryFile(delete=False) as f:
+                input_csv_filename = f.name
+                writer = csv.DictWriter(f, fieldnames=list(fieldnames))
+                writer.writeheader()
+                writer.writerows(input_data)
         #create CSV output file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             output_csv_filename = f.name
         #create script file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             script_filename = f.name
-            f.write('events <- read.csv("' + input_csv_filename.replace('\\','\\\\') + '")\n')
+            if input_csv_filename:
+                f.write('input <- read.csv("' + input_csv_filename.replace('\\','\\\\') + '")\n')
             f.write(r_snippet + '\n')
-            f.write('write.csv(events, file = "' + output_csv_filename.replace('\\','\\\\') + '")\n')
+            f.write('write.csv(output, file = "' + output_csv_filename.replace('\\','\\\\') + '")\n')
         #create r output file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             r_output_filename = f.name
