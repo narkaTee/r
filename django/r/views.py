@@ -22,7 +22,12 @@ def home(request):
                        'Name=c(\'A\',\'B\',\'C\'),'
                        'Value=c(1,2,3)'
                        ')"',
-                "name": "Generate simple data table"
+                "name": "Generate a simple data table",
+                "description": "This example doesn't receive data from a Splunk search. "
+                               "It just creates a small table with 2 columns (Name, Value) "
+                               "and 3 rows. "
+                               "After creating the table, it is returned to Splunk by assigning "
+                               "to the <code>output</code> variable."
             },
             {
                 "id": 'summaryinternalsources',
