@@ -1,14 +1,13 @@
-import os
+#import os
 from contextlib import contextmanager
-
-import fcntl
+import portalocker
 
 @contextmanager
 def file_lock(lock_file):
     with open(lock_file, 'w') as fd:
-        fcntl.lockf(fd, fcntl.LOCK_EX)
+        portalocker.lock(fd, portalocker.LOCK_EX)
         try:
             yield
         finally:
-            fcntl.lockf(fd, fcntl.LOCK_UN)
-    os.remove(lock_file)
+            portalocker.unlock(fd)
+    #os.remove(lock_file)
