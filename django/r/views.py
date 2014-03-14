@@ -78,7 +78,7 @@ def scripts(request):
     script_stanza_prefix = 'script://'
 
     if request.method == 'POST':
-        #save script in local folder
+        #add script stanza
         if upload_new_script_action in request.POST:
             source_file = request.FILES[new_script_field_name]
             if source_file.name.endswith('.r'):
@@ -92,7 +92,7 @@ def scripts(request):
                     'content': base64.encodestring(source_file.read()).replace('\n', ''),
                     'uploaded': calendar.timegm(datetime.datetime.now().utctimetuple())
                 })
-        #delete script
+        #delete script stanza
         else:
             for key in request.POST:
                 if key.startswith(delete_script_action_prefix):
@@ -104,7 +104,7 @@ def scripts(request):
                             stanza.delete()
         return HttpResponseRedirect('')
 
-    #scan for R scripts in app local folder
+    #scan for R script stanzas
     r_scripts = []
     for stanza in r_config.list():
         if stanza.name.startswith(script_stanza_prefix):
@@ -120,4 +120,55 @@ def scripts(request):
         'new_script_field_name': new_script_field_name,
         'upload_new_script_action': upload_new_script_action,
         'delete_script_action_prefix': delete_script_action_prefix,
+    }
+
+
+@render_to(app_id + ':packages.html')
+@login_required
+@config_required
+def packages(request):
+
+    r_config = request.service.confs.create('r')
+
+    add_package_action = 'add_package'
+    add_package_field_name = 'add_package_name'
+    delete_package_action_prefix = 'delete_package_'
+    package_stanza_prefix = 'package://'
+
+    if request.method == 'POST':
+        #add package stanza
+        if add_package_action in request.POST:
+            package_name = request.POST[add_package_field_name]
+            stanza_name = package_stanza_prefix+package_name
+            for stanza in r_config.list():
+                if stanza.name == stanza_name:
+                    stanza.delete()
+            stanza = r_config.create(stanza_name)
+            stanza.submit({})
+        #delete package stanza
+        else:
+            for key in request.POST:
+                if key.startswith(delete_package_action_prefix):
+                    package_name = key[len(delete_package_action_prefix):]
+                    stanza_name = package_stanza_prefix+package_name
+                    for stanza in r_config.list():
+                        if stanza.name == stanza_name:
+                            stanza.delete()
+        return HttpResponseRedirect('')
+
+    #scan for package stanzas
+    r_packages = []
+    for stanza in r_config.list():
+        if stanza.name.startswith(package_stanza_prefix):
+            r_packages.append({
+                'name': stanza.name[len(package_stanza_prefix):],
+            })
+
+    return {
+        'packages': r_packages,
+        'app_title': app_label,
+        'request': request,
+        'add_package_field_name': add_package_field_name,
+        'add_package_action': add_package_action,
+        'delete_package_action_prefix': delete_package_action_prefix,
     }

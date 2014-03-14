@@ -1,0 +1,110 @@
+{% extends "splunkdj:base_with_app_bar.html" %}
+
+{% load splunkmvc %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}splunkjs/css/dashboard.css" />
+    <style type="text/css">
+        .table-root{
+            background-color: #ffffff;
+        }
+        table.packages {
+            text-align: left;
+            width: 100%;
+        }
+        table.packages th {
+            border-bottom: thin solid #757575;
+            padding: 1em;
+        }
+        table.packages td {
+            border-bottom: thin solid #bababa;
+            padding: 1em;
+        }
+    </style>
+{% endblock css %}
+
+{% block title %}
+    {{ app_title }}
+{% endblock title %}
+
+{% block content %}
+    <div class="dashboard-body container-fluid main-section-body">
+        <div class="dashboard-row">
+            <div class="dashboard-header clearfix">
+                <h2>Manage Packages</h2>
+            </div>
+        </div>
+        <form enctype="multipart/form-data" method="post" action="">
+            {% csrf_token %}
+            <div class="dashboard-row">
+                <div class="dashboard-cell"  style="width: 100%;">
+                    <div class="dashboard-panel">
+                        <div class="dashboard-element">
+                            <div class="panel-body">
+                                <table class="packages">
+                                    <tbody>
+                                        <tr>
+                                            <th style="width: 200px;">
+                                                Name
+                                            </th>
+                                            <th>
+                                                Actions
+                                            </th>
+                                        </tr>
+                                        {% for p in packages %}
+                                            <tr>
+                                                <td>
+                                                    {{p.name}}
+                                                </td>
+                                                <td>
+                                                    <input type="submit" value="Delete" name="{{delete_package_action_prefix}}{{p.name}}">
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        {% if not packages %}
+                                            <tr>
+                                                <td colspan="2" style="font-style: italic;">
+                                                    Required packages list is empty
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-row">
+                <div class="dashboard-cell"  style="width: 100%;">
+                    <div class="dashboard-panel">
+                        <div class="dashboard-element">
+                            <div class="panel-head">
+                                <h3>Add Package</h3>
+                            </div>
+                            <div class="panel-body">
+                                <p>
+                                    <input type="text" name="{{add_package_field_name}}">
+                                    <input type="submit" value="Add" name="{{add_package_action}}">
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock content%}
+
+{% block managers %}
+{% endblock managers %}
+
+{% block js %}
+    <script type="text/javascript">
+        var deps = [
+            "splunkjs/ready!"
+        ];
+        require(deps, function(mvc) {
+        });
+    </script>
+{% endblock js %}
