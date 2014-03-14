@@ -22,5 +22,5 @@ perl -i -pe "s/^build\s*=.*/build = $BUILD/g" ../default/app.conf
 perl -i -pe "s/^version\s*=.*/version = $VERSION/g" ../default/app.conf
 
 cd ../..
-tar -zcf r/deploy/r.spl --exclude='r/deploy' --exclude='r/.git' --exclude='r/.git' --exclude='r/.gitignore' --exclude='README.md' -X r/.gitignore ./r
+tar -zcf r/deploy/r.spl --exclude='r/deploy' --exclude='r/.git' --exclude='r/.git' --exclude='r/.gitignore' --exclude='README.md' -X r/.gitignore r
 
