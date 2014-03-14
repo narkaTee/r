@@ -45,9 +45,9 @@ send Pull Requests or just create Issues.
 
 Features
 ---
-- ...
-- Manage Custom Scripts (use the *source()* function to include them)
-- TODO
+- Manage custom scripts (use the *source()* function to include them)
+- Manage external packages (use the *library()* function to load them)
+- ...TODO...
 
 Installation
 ---
