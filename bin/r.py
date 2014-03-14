@@ -6,6 +6,7 @@ import subprocess
 import traceback
 import sys
 from splunk.clilib import cli_common as cli
+import base64
 
 try:
     (isgetinfo, sys.argv) = splunk.Intersplunk.isGetInfo(sys.argv)
@@ -28,17 +29,31 @@ try:
         splunk.Intersplunk.parseError("Missing actual R script parameter")
     r_snippet = sys.argv[1]
 
-    #calculate some paths
-    bin_dir_path, _ = os.path.split(os.path.abspath(__file__))
-    scripts_dir_path = os.path.join(os.path.dirname(bin_dir_path), 'local', 'scripts')
+    #read configuration file
+    cli.cacheConfFile('r')
+    r_config = cli.confSettings['r']
 
     #read R library path from configuration
-    r_path_config = cli.getConfStanza('r', 'paths')
+    r_path_config = r_config['paths']
     r_path = r_path_config.get('r')
     if not os.path.exists(r_path):
         splunk.Intersplunk.outputResults(
             splunk.Intersplunk.generateErrorResults('Cannot find R executable at path \'%s\'' % r_path))
         exit(0)
+
+    #make sure scrips exists
+    r_temp_dir = os.path.join(tempfile.gettempdir(), 'r')
+    if not os.path.exists(r_temp_dir):
+        os.makedirs(r_temp_dir)
+    script_stanza_prefix = 'script://'
+    for stanza_name in r_config:
+        if stanza_name.startswith(script_stanza_prefix):
+            script_stanza = r_config[stanza_name]
+            script_content = base64.decodestring(script_stanza['content'])
+            script_filename = stanza_name[len(script_stanza_prefix):]+'.r'
+            script_full_path = os.path.join(r_temp_dir, script_filename)
+            with open(script_full_path, 'wb') as f:
+                f.write(script_content)
 
     #read all the input data
     input_data = splunk.Intersplunk.readResults()
@@ -89,7 +104,7 @@ try:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
-            cwd=scripts_dir_path
+            cwd=r_temp_dir
         )
         output, error = process.communicate()
         if error is not None and len(error) > 0:

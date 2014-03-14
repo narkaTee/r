@@ -1,4 +1,3 @@
-import django
 from django.contrib.auth.decorators import login_required
 from splunkdj.decorators.render import render_to
 from .forms import SetupForm
@@ -7,6 +6,9 @@ from django.http import HttpResponseRedirect
 from splunkdj.setup import config_required
 from splunkdj.setup import create_setup_view_context
 import os
+import base64
+import calendar
+import datetime
 
 app_id = "r"
 app_label = "R - Statistical Computing"
@@ -68,40 +70,48 @@ def setup(request):
 @config_required
 def scripts(request):
 
+    r_config = request.service.confs.create('r')
+
     upload_new_script_action = 'upload_new_script'
     new_script_field_name = 'new_script'
     delete_script_action_prefix = 'delete_script_'
-    dirname, filename = os.path.split(os.path.abspath(__file__))
-    scripts_directory_path = os.path.join(os.path.dirname(os.path.dirname(dirname)), 'local', 'scripts')
+    script_stanza_prefix = 'script://'
 
     if request.method == 'POST':
         #save script in local folder
         if upload_new_script_action in request.POST:
-            if not os.path.exists(scripts_directory_path):
-                os.makedirs(scripts_directory_path)
             source_file = request.FILES[new_script_field_name]
             if source_file.name.endswith('.r'):
-                with open(os.path.join(scripts_directory_path, source_file.name), 'wb+') as destination_file:
-                    for chunk in source_file.chunks():
-                        destination_file.write(chunk)
+                source_file_noext, _ = os.path.splitext(source_file.name)
+                stanza_name = script_stanza_prefix+source_file_noext
+                for stanza in r_config.list():
+                    if stanza.name == stanza_name:
+                        stanza.delete()
+                script_stanza = r_config.create(stanza_name)
+                script_stanza.submit({
+                    'content': base64.encodestring(source_file.read()).replace('\n', ''),
+                    'uploaded': calendar.timegm(datetime.datetime.now().utctimetuple())
+                })
         #delete script
         else:
             for key in request.POST:
                 if key.startswith(delete_script_action_prefix):
                     file_name = key[len(delete_script_action_prefix):]
-                    file_path = os.path.join(scripts_directory_path, file_name)
-                    os.remove(file_path)
+                    source_file_noext, _ = os.path.splitext(file_name)
+                    stanza_name = script_stanza_prefix+source_file_noext
+                    for stanza in r_config.list():
+                        if stanza.name == stanza_name:
+                            stanza.delete()
         return HttpResponseRedirect('')
 
     #scan for R scripts in app local folder
     r_scripts = []
-    if os.path.exists(scripts_directory_path):
-        for file_name in os.listdir(scripts_directory_path):
-            if file_name.endswith(".r"):
-                r_scripts.append({
-                    'file_name': file_name,
-                    'is_local': True
-                })
+    for stanza in r_config.list():
+        if stanza.name.startswith(script_stanza_prefix):
+            r_scripts.append({
+                'file_name': stanza.name[len(script_stanza_prefix):]+'.r',
+                'is_local': True
+            })
 
     return {
         'scripts': r_scripts,
