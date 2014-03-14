@@ -33,7 +33,7 @@ try:
     cli.cacheConfFile('r')
     r_config = cli.confSettings['r']
 
-    #read R library path from configuration
+    #check if the R library presence
     r_path_config = r_config['paths']
     r_path = r_path_config.get('r')
     if not os.path.exists(r_path):
@@ -41,7 +41,7 @@ try:
             splunk.Intersplunk.generateErrorResults('Cannot find R executable at path \'%s\'' % r_path))
         exit(0)
 
-    #make sure scrips exists
+    #make sure that custom script files exists
     r_temp_dir = os.path.join(tempfile.gettempdir(), 'r')
     if not os.path.exists(r_temp_dir):
         os.makedirs(r_temp_dir)
