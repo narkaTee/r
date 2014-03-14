@@ -4,3 +4,4 @@
 local
 local.meta
 r.spl
+*.pyc
