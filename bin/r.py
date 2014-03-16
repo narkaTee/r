@@ -42,7 +42,7 @@ try:
     #check if the R library presence
     if not framework.is_installed():
         splunk.Intersplunk.outputResults(
-            splunk.Intersplunk.generateErrorResults('Cannot find R executable at path \'%s\'' % framework.r_path))
+            splunk.Intersplunk.generateErrorResults('R not installed'))
         exit(0)
 
     #lock installing prerequirements
@@ -90,7 +90,7 @@ try:
         #    splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(f.read()))
         #    exit(0)
         process = subprocess.Popen(
-            "\"" + framework.r_path + "\" --vanilla" + " < \"" + script_filename + "\" > \"" + r_output_filename + "\"",
+            "\"" + framework.get_path() + "\" --vanilla" + " < \"" + script_filename + "\" > \"" + r_output_filename + "\"",
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,

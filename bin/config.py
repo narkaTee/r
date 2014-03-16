@@ -5,6 +5,12 @@ cli.cacheConfFile('r')
 r_config = cli.confSettings['r']
 
 
+def get_r_path():
+    path_config = r_config['paths']
+    r_path = path_config.get('r')
+    return r_path
+
+
 def iter_stanzas(scheme):
     prefix = '%s://' % scheme
     for stanza_name in r_config:
