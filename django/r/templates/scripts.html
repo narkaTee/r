@@ -53,8 +53,11 @@
                                 <table class="scripts">
                                     <tbody>
                                         <tr>
-                                            <th style="width: 200px;">
+                                            <th style="width: 100px;">
                                                 Name
+                                            </th>
+                                            <th style="width: 100px;">
+                                                Owner
                                             </th>
                                             <th>
                                                 Actions
@@ -66,15 +69,20 @@
                                                     {{s.file_name}}
                                                 </td>
                                                 <td>
-                                                    {% if s.is_local %}
+                                                    {{s.owner}}
+                                                </td>
+                                                <td>
+                                                    {% if s.is_removable %}
                                                         <input type="submit" value="Delete" name="{{delete_script_action_prefix}}{{s.file_name}}">
+                                                    {% else %}
+                                                        <span style="font-style: italic">Cannot delete</span>
                                                     {% endif %}
                                                 </td>
                                             </tr>
                                         {% endfor %}
                                         {% if not scripts %}
                                             <tr>
-                                                <td colspan="2" style="font-style: italic;">
+                                                <td colspan="3" style="font-style: italic;">
                                                     No Script uploaded
                                                 </td>
                                             </tr>

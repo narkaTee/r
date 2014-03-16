@@ -110,7 +110,8 @@ def scripts(request):
         if stanza.name.startswith(script_stanza_prefix):
             r_scripts.append({
                 'file_name': stanza.name[len(script_stanza_prefix):]+'.r',
-                'is_local': True
+                'is_removable': stanza.access['removable'] == '1',
+                'owner': stanza.access['owner'],
             })
 
     return {
