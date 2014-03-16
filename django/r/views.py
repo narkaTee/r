@@ -163,6 +163,8 @@ def packages(request):
         if stanza.name.startswith(package_stanza_prefix):
             r_packages.append({
                 'name': stanza.name[len(package_stanza_prefix):],
+                'is_removable': stanza.access['removable'] == '1',
+                'owner': stanza.access['owner'],
             })
 
     return {

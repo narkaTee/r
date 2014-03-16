@@ -34,6 +34,20 @@
                 <h2>Manage Packages</h2>
             </div>
         </div>
+        <div class="dashboard-row">
+            <div class="dashboard-cell" style="width: 100%;">
+                <p>
+                    This page allows you to specify packages that should be availalbe
+                    before when running the actual r command script. You jsut have
+                    to specify the package name - downloading and installing is done
+                    automatically.
+                </p>
+                <p>
+                    To actually use individual packages from within your scripts, you have to load them by
+                    calling the <code>packages.install(...)</code> function.
+                </p>
+            </div>
+        </div>
         <form enctype="multipart/form-data" method="post" action="">
             {% csrf_token %}
             <div class="dashboard-row">
@@ -44,8 +58,11 @@
                                 <table class="packages">
                                     <tbody>
                                         <tr>
-                                            <th style="width: 200px;">
+                                            <th style="width: 100px;">
                                                 Name
+                                            </th>
+                                            <th style="width: 100px;">
+                                                Owner
                                             </th>
                                             <th>
                                                 Actions
@@ -57,7 +74,14 @@
                                                     {{p.name}}
                                                 </td>
                                                 <td>
-                                                    <input type="submit" value="Delete" name="{{delete_package_action_prefix}}{{p.name}}">
+                                                    {{p.owner}}
+                                                </td>
+                                                <td>
+                                                    {% if p.is_removable %}
+                                                        <input type="submit" value="Delete" name="{{delete_package_action_prefix}}{{p.name}}">
+                                                    {% else %}
+                                                        <span style="font-style: italic">Cannot delete</span>
+                                                    {% endif %}
                                                 </td>
                                             </tr>
                                         {% endfor %}
