@@ -1,28 +1,23 @@
 import path
 import os
-from splunk.clilib import cli_common as cli
 import urllib2
 import subprocess
 import framework
+import config
 
-script_stanza_prefix = 'script://'
+packages_stanza_prefix = 'package://'
 packages_path = path.get_named_path('packages')
 library_path = path.get_named_path('library')
-
-#read configuration file
-cli.cacheConfFile('r')
-r_config = cli.confSettings['r']
 
 
 def refresh_packages():
     #make sure that required packages are downloaded
     if not os.path.exists(packages_path):
         os.makedirs(packages_path)
-    packages_stanza_prefix = 'package://'
     package_list = []
-    for stanza_name in r_config:
+    for stanza_name in config.r_config:
         if stanza_name.startswith(packages_stanza_prefix):
-            package_stanza = r_config[stanza_name]
+            #package_stanza = config.r_config[stanza_name]
             package_name = stanza_name[len(packages_stanza_prefix):]
             package_path = os.path.join(packages_path, package_name) + '.tar.gz'
             if not os.path.exists(package_path):
