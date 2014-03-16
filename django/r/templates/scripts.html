@@ -34,6 +34,15 @@
                 <h2>Manage Scripts</h2>
             </div>
         </div>
+        <div class="dashboard-row">
+            <div class="dashboard-cell" style="width: 100%;">
+                <p>
+                    This page allows you to upload your custom R script files into Splunk.
+                    Uploaded scripts can be used from the actual r command script by calling
+                    the <code>source(...)</code> function.
+                </p>
+            </div>
+        </div>
         <form enctype="multipart/form-data" method="post" action="">
             {% csrf_token %}
             <div class="dashboard-row">
@@ -95,6 +104,25 @@
                 </div>
             </div>
         </form>
+        <div class="dashboard-row">
+            <div class="dashboard-cell" style="width: 100%;">
+                <p>
+                    Let's say you upload a file named <code>add.r</code> with the following content:
+                </p>
+                <pre>
+add <- function(a,b) {
+  c = a+b
+  return(c)
+}</pre>
+                <p>
+                    The following code uses the add function:
+                </p>
+                <pre>
+source('add.r')
+result = add(4,2)
+output=data.frame(Result=c(result))</pre>
+            </div>
+        </div>
     </div>
 {% endblock content%}
 
