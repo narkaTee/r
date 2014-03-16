@@ -7,11 +7,12 @@ import os
 import subprocess
 import traceback
 import sys
-from splunk.clilib import cli_common as cli
-import base64
-import urllib2
 import lockfile
 from utils import get_service
+import path
+import scripts
+import packages
+import framework
 
 try:
     (isgetinfo, sys.argv) = splunk.Intersplunk.isGetInfo(sys.argv)
@@ -27,109 +28,27 @@ try:
             req_fields=None
         )
 
-    temp_path = tempfile.gettempdir()
-
     #read all the input data
     keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
     if len(sys.argv) < 2:
-        splunk.Intersplunk.parseError("Missing actual R script parameter")
+        raise Exception("Missing actual R script parameter")
     r_snippet = sys.argv[1]
     settings = {}
     input_data = splunk.Intersplunk.readResults(sys.stdin, settings)
 
     #connect to splunk using SDK
     service = get_service(settings['infoPath'])
-    service.indexes['main']
-
-    #read configuration file
-    cli.cacheConfFile('r')
-    r_config = cli.confSettings['r']
 
     #check if the R library presence
-    r_path_config = r_config['paths']
-    r_path = r_path_config.get('r')
-    if not os.path.exists(r_path):
+    if not framework.is_installed():
         splunk.Intersplunk.outputResults(
-            splunk.Intersplunk.generateErrorResults('Cannot find R executable at path \'%s\'' % r_path))
+            splunk.Intersplunk.generateErrorResults('Cannot find R executable at path \'%s\'' % framework.r_path))
         exit(0)
 
     #lock installing prerequirements
-    lockfile_path = os.path.join(temp_path, 'r.lock')
-    with lockfile.file_lock(lockfile_path):
-
-        #make sure the temp directory exist
-        r_temp_path = os.path.join(temp_path, 'r')
-        #if os.path.exists(r_temp_path):
-        #    import shutil
-        #    shutil.rmtree(r_temp_path)
-        if not os.path.exists(r_temp_path):
-            os.makedirs(r_temp_path)
-
-        #make sure that custom script files exists
-        custom_scripts_path = os.path.join(r_temp_path, 'scripts')
-        if not os.path.exists(custom_scripts_path):
-            os.makedirs(custom_scripts_path)
-        script_stanza_prefix = 'script://'
-        for stanza_name in r_config:
-            if stanza_name.startswith(script_stanza_prefix):
-                script_stanza = r_config[stanza_name]
-                script_content = base64.decodestring(script_stanza['content'])
-                script_filename = stanza_name[len(script_stanza_prefix):] + '.r'
-                script_full_path = os.path.join(custom_scripts_path, script_filename)
-                with open(script_full_path, 'wb') as f:
-                    f.write(script_content)
-
-        #make sure that required packages are downloaded
-        packages_path = os.path.join(r_temp_path, 'packages')
-        if not os.path.exists(packages_path):
-            os.makedirs(packages_path)
-        packages_stanza_prefix = 'package://'
-        packages = []
-        for stanza_name in r_config:
-            if stanza_name.startswith(packages_stanza_prefix):
-                package_stanza = r_config[stanza_name]
-                package_name = stanza_name[len(packages_stanza_prefix):]
-                package_path = os.path.join(packages_path, package_name) + '.tar.gz'
-                if not os.path.exists(package_path):
-                    description_url = 'http://cran.r-project.org/web/packages/%s/DESCRIPTION' % package_name
-                    description_data = urllib2.urlopen(description_url).read(20000)
-                    version_key = 'Version:'
-                    for description_line in description_data.split("\n"):
-                        if description_line.startswith(version_key):
-                            version = description_line[len(version_key):].strip()
-                            package_url = 'http://cran.r-project.org/src/contrib/%s_%s.tar.gz' % (package_name, version)
-                            package_data = urllib2.urlopen(package_url).read()
-                            with open(package_path, 'wb') as f:
-                                f.write(package_data)
-                            packages.append({
-                                'name': package_name,
-                                'path': package_path
-                            })
-                            break
-
-        #make sure that required packages are installed
-        library_path = os.path.join(r_temp_path, 'library')
-        if not os.path.exists(library_path):
-            os.makedirs(library_path)
-        for package in packages:
-            library_package_path = os.path.join(library_path, package['name'])
-            if not os.path.exists(library_package_path):
-                command = "\"" + r_path + "\" CMD INSTALL -l \"" + library_path + "\" \"" + package['path'] + "\""
-                process = subprocess.Popen(
-                    command,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    shell=True,
-                    cwd=custom_scripts_path
-                )
-                _, output = process.communicate()
-                if output is None:
-                    splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults('Unexpected output'))
-                    exit(0)
-                if not 'DONE' in output:
-                    splunk.Intersplunk.outputResults(
-                        splunk.Intersplunk.generateErrorResults('Unexpected output: %s' % output))
-                    exit(0)
+    with lockfile.file_lock(path.get_named_path('r.lock')):
+        scripts.refresh_files()
+        packages.refresh_packages()
 
     #collect field names
     fieldnames = set()
@@ -171,13 +90,13 @@ try:
         #    splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(f.read()))
         #    exit(0)
         process = subprocess.Popen(
-            "\"" + r_path + "\" --vanilla" + " < \"" + script_filename + "\" > \"" + r_output_filename + "\"",
+            "\"" + framework.r_path + "\" --vanilla" + " < \"" + script_filename + "\" > \"" + r_output_filename + "\"",
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
-            cwd=custom_scripts_path,
+            cwd=scripts.custom_scripts_path,
             env={
-                'R_LIBS_USER': library_path
+                'R_LIBS_USER': packages.library_path
             },
         )
         output, error = process.communicate()
