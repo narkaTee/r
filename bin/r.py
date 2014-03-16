@@ -1,5 +1,8 @@
+from splunklib.searchcommands import csv as splunkcsv
+del splunkcsv
 import csv
 import tempfile
+from xml.etree import ElementTree
 import splunk.Intersplunk
 import os
 import subprocess
@@ -9,6 +12,8 @@ from splunk.clilib import cli_common as cli
 import base64
 import urllib2
 import lockfile
+from urlparse import urlsplit
+from splunklib.client import Service
 
 try:
     (isgetinfo, sys.argv) = splunk.Intersplunk.isGetInfo(sys.argv)
@@ -24,13 +29,61 @@ try:
             req_fields=None
         )
 
-    keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
-    #splunk.Intersplunk.parseError(",".join(keywords))
+    temp_path = tempfile.gettempdir()
 
+    #read all the input data
+    keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
     if len(sys.argv) < 2:
         splunk.Intersplunk.parseError("Missing actual R script parameter")
     r_snippet = sys.argv[1]
-    temp_path = tempfile.gettempdir()
+    settings = {}
+    input_data = splunk.Intersplunk.readResults(sys.stdin, settings)
+
+    # get search_results_info
+    info_path = settings['infoPath']
+
+    def convert_field(field):
+        return (field[1:] if field[0] == '_' else field).replace('.', '_')
+
+    def convert_value(field, value):
+        if field == 'countMap':
+            split = value.split(';')
+            value = dict((key, int(value))
+                         for key, value in zip(split[0::2], split[1::2]))
+        elif field == 'vix_families':
+            value = ElementTree.fromstring(value)
+        elif value == '':
+            value = None
+        else:
+            try:
+                value = float(value)
+                if value.is_integer():
+                    value = int(value)
+            except ValueError:
+                pass
+        return value
+    with open(info_path, 'rb') as f:
+        from collections import namedtuple
+        reader = csv.reader(f, dialect='splunklib.searchcommands')
+        fields = [convert_field(x) for x in reader.next()]
+        values = [convert_value(f, v) for f, v in zip(fields, reader.next())]
+    search_results_info_type = namedtuple("SearchResultsInfo", fields)
+    search_results_info = search_results_info_type._make(values)
+
+    #create servie object
+    _, netloc, _, _, _ = urlsplit(
+        search_results_info.splunkd_uri,
+        search_results_info.splunkd_protocol,
+        allow_fragments=False
+    )
+    splunkd_host, _ = netloc.split(':')
+    service = Service(
+        scheme=search_results_info.splunkd_protocol,
+        host=splunkd_host,
+        port=search_results_info.splunkd_port,
+        token=search_results_info.auth_token,
+        app=search_results_info.ppc_app
+    )
 
     #read configuration file
     cli.cacheConfFile('r')
@@ -121,9 +174,6 @@ try:
                     splunk.Intersplunk.outputResults(
                         splunk.Intersplunk.generateErrorResults('Unexpected output: %s' % output))
                     exit(0)
-
-    #read all the input data
-    input_data = splunk.Intersplunk.readResults()
 
     #collect field names
     fieldnames = set()
