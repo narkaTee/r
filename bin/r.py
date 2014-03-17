@@ -4,7 +4,6 @@ import csv
 import tempfile
 import splunk.Intersplunk
 import os
-import subprocess
 import traceback
 import sys
 import lockfile
@@ -15,6 +14,8 @@ import packages
 import framework
 
 try:
+    # check execution mode: it could be 'getinfo' to get some information about
+    # how to execute the actual command
     (isgetinfo, sys.argv) = splunk.Intersplunk.isGetInfo(sys.argv)
     if isgetinfo:
         splunk.Intersplunk.outputInfo(
@@ -28,7 +29,7 @@ try:
             req_fields=None
         )
 
-    #read all the input data
+    #read command options, input headers and data
     keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
     if len(sys.argv) < 2:
         raise Exception("Missing actual R script parameter")
@@ -38,12 +39,6 @@ try:
 
     #connect to splunk using SDK
     service = get_service(settings['infoPath'])
-
-    #check if the R library presence
-    if not framework.is_installed():
-        splunk.Intersplunk.outputResults(
-            splunk.Intersplunk.generateErrorResults('R not installed'))
-        exit(0)
 
     #lock installing prerequirements
     with lockfile.file_lock(path.get_named_path('r.lock')):
@@ -63,7 +58,6 @@ try:
     input_csv_filename = None
     output_csv_filename = None
     script_filename = None
-    r_output_filename = None
     try:
         #create CSV input file
         if fieldnames:
@@ -82,34 +76,8 @@ try:
                 f.write('input <- read.csv("' + input_csv_filename.replace('\\', '\\\\') + '")\n')
             f.write(r_snippet + '\n')
             f.write('write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n')
-        #create r output file
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            r_output_filename = f.name
 
-        #with open(input_csv_filename, "r") as f:
-        #    splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(f.read()))
-        #    exit(0)
-        process = subprocess.Popen(
-            "\"" + framework.get_path() + "\" --vanilla" + " < \"" + script_filename + "\" > \"" + r_output_filename + "\"",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-            cwd=scripts.custom_scripts_path,
-            env={
-                'R_LIBS_USER': packages.library_path
-            },
-        )
-        output, error = process.communicate()
-        if error is not None and len(error) > 0:
-            splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(error))
-            exit(0)
-        if output is not None and len(output) > 0:
-            splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(output))
-            exit(0)
-
-        #with open(output_csv_filename, "r") as f:
-        #    splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(f.read()))
-        #    exit(0)
+        framework.exeute(script_filename, packages.library_path)
 
         #read csv output
         output = []
@@ -136,8 +104,6 @@ try:
             os.remove(output_csv_filename)
         if script_filename:
             os.remove(script_filename)
-        if r_output_filename:
-            os.remove(r_output_filename)
 
 except Exception as e:
     splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e) + ": " + traceback.format_exc()))
