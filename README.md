@@ -25,37 +25,33 @@ A minimal command syntax looks like this:
 
     | r "output = data.frame(Name=c('A','B','C'),Value=c(1,2,3))"
 
-TODO: implement additional parameters
+Features
+---
+- Integration of a R script into the Splunk search pipeline
+- Upload custom scripts (use the *source()* function to include them into the pipeline script)
+- Manage external packages (use the *library()* function to load them from the pipeline script)
+- Supports generating and streaming command mode
+- Show R error messages on the Splunk UI
 
 Status
 ---
 This project is in a very early alpha status and should not be used in a
 production environment.
 
-Contribute
----
-I'm not a R expert, that's why I need your help
-to show more and better examples (see below).
-
-Please send me your feedback, questions and suggestions
-at [rfujara@splunk.com](rfujara@splunk.com).
-
-You're also invited to clone/watch/star/fork the [GitHub project](https://github.com/rfsp/r),
-send Pull Requests or just create Issues.
-
-Features
----
-- Manage custom scripts (use the *source()* function to include them)
-- Manage external packages (use the *library()* function to load them)
-- ...TODO...
-
 Installation
 ---
-This app is available on the [Splunk App Store](http://apps.splunk.com/app/1735/)
-
-Or you can clone this repository to install the app manually.
+This app is available on the [Splunk App Store](http://apps.splunk.com/app/1735/).
+You can also clone the [repository](https://github.com/rfsp/r) to install the app manually.
 
 Platforms
 ---
 Currently only Mac OS X and Windows are supported.
 Linux and Unix will be supported in future.
+
+Contribute
+---
+Please send me your feedback, questions and suggestions
+at [rfujara@splunk.com](rfujara@splunk.com).
+
+You're also invited to clone/watch/star/fork the [GitHub project](https://github.com/rfsp/r),
+send Pull Requests or just create Issues.
