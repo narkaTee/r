@@ -7,7 +7,8 @@ scheme = 'script'
 custom_scripts_path = path.get_named_path('scripts')
 extension = 'r'
 
-def refresh_files():
+
+def refresh_files(service):
 
     if not os.path.exists(custom_scripts_path):
         os.makedirs(custom_scripts_path)
@@ -15,7 +16,7 @@ def refresh_files():
     filenames = set()
 
     # check configuration for requred scripts
-    for stanza, name in config.iter_stanzas(scheme):
+    for stanza, name in config.iter_stanzas(service, scheme):
         filename = name + os.path.extsep + extension
         full_path = os.path.join(custom_scripts_path, filename)
 
@@ -27,7 +28,7 @@ def refresh_files():
             create_file = True
 
         if create_file:
-            script_content = base64.decodestring(stanza['content'])
+            script_content = base64.decodestring(stanza.__getattr__('content'))
             with open(full_path, 'wb') as f:
                 f.write(script_content)
 
@@ -37,5 +38,5 @@ def refresh_files():
     for filename in os.listdir(custom_scripts_path):
         if filename.endswith(os.path.extsep + extension):
             if not filename in filenames:
-                path = os.path.join(custom_scripts_path, filename)
-                os.remove(path)
+                script_path = os.path.join(custom_scripts_path, filename)
+                os.remove(script_path)

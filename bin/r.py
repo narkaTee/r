@@ -42,8 +42,8 @@ try:
 
     #lock installing prerequirements
     with lockfile.file_lock(path.get_named_path('r.lock')):
-        scripts.refresh_files()
-        packages.refresh_packages()
+        scripts.refresh_files(service)
+        packages.refresh_packages(service)
 
     #collect field names
     fieldnames = set()
@@ -77,7 +77,7 @@ try:
             f.write(r_snippet + '\n')
             f.write('write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n')
 
-        framework.exeute(script_filename, packages.library_path)
+        framework.exeute(service, script_filename, packages.library_path)
 
         #read csv output
         output = []
