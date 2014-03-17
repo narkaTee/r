@@ -42,7 +42,7 @@ try:
 
     #lock installing prerequirements
     with lockfile.file_lock(path.get_named_path('r.lock')):
-        scripts.refresh_files(service)
+        scripts.create_files(service)
         packages.refresh_packages(service)
 
     #collect field names

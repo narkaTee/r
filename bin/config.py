@@ -30,3 +30,22 @@ def iter_stanzas(service, scheme):
         if stanza.name.startswith(prefix):
             after_prefix = stanza.name[len(prefix):]
             yield stanza, after_prefix
+
+
+def create_stanza(service, scheme, name, attr):
+    r_config_file = get_r_config_file(service)
+    fullname = '%s://%s' % (scheme, name)
+    for stanza in r_config_file.list():
+        if stanza.name == fullname:
+            stanza.delete()
+    script_stanza = r_config_file.create(fullname)
+    script_stanza.submit(attr)
+    return script_stanza
+
+
+def delete_stanza(service, scheme, name):
+    r_config_file = get_r_config_file(service)
+    fullname = '%s://%s' % (scheme, name)
+    for stanza in r_config_file.list():
+        if stanza.name == fullname:
+            stanza.delete()

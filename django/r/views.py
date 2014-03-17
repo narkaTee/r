@@ -6,9 +6,13 @@ from django.http import HttpResponseRedirect
 from splunkdj.setup import config_required
 from splunkdj.setup import create_setup_view_context
 import os
-import base64
-import calendar
-import datetime
+import sys
+
+# allow imports from bin directory
+bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bin')
+sys.path += bin_path
+
+import scripts as scriptlib
 
 app_id = "r"
 app_label = "R - Statistical Computing"
@@ -70,12 +74,9 @@ def setup(request):
 @config_required
 def scripts(request):
 
-    r_config = request.service.confs.create('r')
-
     upload_new_script_action = 'upload_new_script'
     new_script_field_name = 'new_script'
     delete_script_action_prefix = 'delete_script_'
-    script_stanza_prefix = 'script://'
 
     if request.method == 'POST':
         #add script stanza
@@ -83,36 +84,24 @@ def scripts(request):
             source_file = request.FILES[new_script_field_name]
             if source_file.name.endswith('.r'):
                 source_file_noext, _ = os.path.splitext(source_file.name)
-                stanza_name = script_stanza_prefix+source_file_noext
-                for stanza in r_config.list():
-                    if stanza.name == stanza_name:
-                        stanza.delete()
-                script_stanza = r_config.create(stanza_name)
-                script_stanza.submit({
-                    'content': base64.encodestring(source_file.read()).replace('\n', ''),
-                    'uploaded': calendar.timegm(datetime.datetime.now().utctimetuple())
-                })
+                scriptlib.add(request.service, source_file_noext, source_file.read())
         #delete script stanza
         else:
             for key in request.POST:
                 if key.startswith(delete_script_action_prefix):
                     file_name = key[len(delete_script_action_prefix):]
                     source_file_noext, _ = os.path.splitext(file_name)
-                    stanza_name = script_stanza_prefix+source_file_noext
-                    for stanza in r_config.list():
-                        if stanza.name == stanza_name:
-                            stanza.delete()
+                    scriptlib.remove(request.service, source_file_noext)
         return HttpResponseRedirect('')
 
     #scan for R script stanzas
     r_scripts = []
-    for stanza in r_config.list():
-        if stanza.name.startswith(script_stanza_prefix):
-            r_scripts.append({
-                'file_name': stanza.name[len(script_stanza_prefix):]+'.r',
-                'is_removable': stanza.access['removable'] == '1',
-                'owner': stanza.access['owner'],
-            })
+    for stanza, name in scriptlib.iter_stanzas(request.service):
+        r_scripts.append({
+            'file_name': name+'.r',
+            'is_removable': stanza.access['removable'] == '1',
+            'owner': stanza.access['owner'],
+        })
 
     return {
         'scripts': r_scripts,

@@ -2,13 +2,15 @@ import path
 import os
 import base64
 import config
+import calendar
+import datetime
 
 scheme = 'script'
 custom_scripts_path = path.get_named_path('scripts')
 extension = 'r'
 
 
-def refresh_files(service):
+def create_files(service):
 
     if not os.path.exists(custom_scripts_path):
         os.makedirs(custom_scripts_path)
@@ -40,3 +42,18 @@ def refresh_files(service):
             if not filename in filenames:
                 script_path = os.path.join(custom_scripts_path, filename)
                 os.remove(script_path)
+
+
+def iter_stanzas(service):
+    return config.iter_stanzas(service, scheme)
+
+
+def add(service, name, content):
+    config.create_stanza(service, scheme, name, {
+        'content': base64.encodestring(content).replace('\n', ''),
+        'uploaded': calendar.timegm(datetime.datetime.now().utctimetuple())
+    })
+
+
+def remove(service, name):
+    config.delete_stanza(service, scheme, name)
