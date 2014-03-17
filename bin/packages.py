@@ -40,3 +40,16 @@ def refresh_packages(service):
         library_package_path = os.path.join(library_path, package['name'])
         if not os.path.exists(library_package_path):
             framework.install_package(service, library_path, package['path'])
+
+
+def iter_stanzas(service):
+    return config.iter_stanzas(service, scheme)
+
+
+def add(service, name):
+    config.create_stanza(service, scheme, name, {
+    })
+
+
+def remove(service, name):
+    config.delete_stanza(service, scheme, name)

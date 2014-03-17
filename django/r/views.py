@@ -13,6 +13,7 @@ bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__
 sys.path += bin_path
 
 import scripts as scriptlib
+import packages as packagelib
 
 app_id = "r"
 app_label = "R - Statistical Computing"
@@ -118,43 +119,31 @@ def scripts(request):
 @config_required
 def packages(request):
 
-    r_config = request.service.confs.create('r')
-
     add_package_action = 'add_package'
     add_package_field_name = 'add_package_name'
     delete_package_action_prefix = 'delete_package_'
-    package_stanza_prefix = 'package://'
 
     if request.method == 'POST':
         #add package stanza
         if add_package_action in request.POST:
             package_name = request.POST[add_package_field_name]
-            stanza_name = package_stanza_prefix+package_name
-            for stanza in r_config.list():
-                if stanza.name == stanza_name:
-                    stanza.delete()
-            stanza = r_config.create(stanza_name)
-            stanza.submit({})
+            packagelib.add(request.service, package_name)
         #delete package stanza
         else:
             for key in request.POST:
                 if key.startswith(delete_package_action_prefix):
                     package_name = key[len(delete_package_action_prefix):]
-                    stanza_name = package_stanza_prefix+package_name
-                    for stanza in r_config.list():
-                        if stanza.name == stanza_name:
-                            stanza.delete()
+                    packagelib.remove(request.service, package_name)
         return HttpResponseRedirect('')
 
     #scan for package stanzas
     r_packages = []
-    for stanza in r_config.list():
-        if stanza.name.startswith(package_stanza_prefix):
-            r_packages.append({
-                'name': stanza.name[len(package_stanza_prefix):],
-                'is_removable': stanza.access['removable'] == '1',
-                'owner': stanza.access['owner'],
-            })
+    for stanza, package_name in packagelib.iter_stanzas(request.service):
+        r_packages.append({
+            'name': package_name,
+            'is_removable': stanza.access['removable'] == '1',
+            'owner': stanza.access['owner'],
+        })
 
     return {
         'packages': r_packages,
