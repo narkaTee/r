@@ -41,7 +41,8 @@ try:
     service = get_service(settings['infoPath'])
 
     #lock installing prerequirements
-    with lockfile.file_lock(path.get_named_path('r.lock')):
+    lock_file_path = path.get_named_path('r.lock')
+    with lockfile.file_lock(lock_file_path):
         scripts.create_files(service)
         packages.refresh_packages(service)
 
