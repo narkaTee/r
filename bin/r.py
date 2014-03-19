@@ -12,6 +12,7 @@ import path
 import scripts
 import packages
 import framework
+import errors
 
 try:
     # check execution mode: it could be 'getinfo' to get some information about
@@ -105,6 +106,9 @@ try:
             os.remove(output_csv_filename)
         if script_filename:
             os.remove(script_filename)
+
+except errors.Error as e:
+    splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e)))
 
 except Exception as e:
     splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e) + ": " + traceback.format_exc()))

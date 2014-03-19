@@ -3,10 +3,46 @@ import os
 import urllib2
 import framework
 import config
+import errors
 
 scheme = 'package'
 packages_path = path.get_named_path('packages')
 library_path = path.get_named_path('library')
+
+
+class PackageInstallError(errors.Error):
+    def __init__(self, name, reason):
+        self.name = name
+        super(PackageInstallError, self).__init__(
+            'Cannot install package \'%s\'. %s' % (name, reason)
+        )
+
+
+class DescriptionDownloadError(PackageInstallError):
+    def __init__(self, name, http_error):
+        self.http_error = http_error
+        super(DescriptionDownloadError, self).__init__(
+            name,
+            'Attempt to download CRAN description: %s' % str(http_error)
+        )
+
+
+class ArchiveDownloadError(PackageInstallError):
+    def __init__(self, name, http_error):
+        self.http_error = http_error
+        super(ArchiveDownloadError, self).__init__(
+            name,
+            'Attempt to download compressed file: %s' % str(http_error)
+        )
+
+
+class ArchiveSaveError(PackageInstallError):
+    def __init__(self, name, exception):
+        self.exception = exception
+        super(ArchiveSaveError, self).__init__(
+            name,
+            'Attempt to save compressed file: %s' % str(exception)
+        )
 
 
 def refresh_packages(service):
@@ -18,15 +54,25 @@ def refresh_packages(service):
         package_path = os.path.join(packages_path, package_name) + '.tar.gz'
         if not os.path.exists(package_path):
             description_url = 'http://cran.r-project.org/web/packages/%s/DESCRIPTION' % package_name
-            description_data = urllib2.urlopen(description_url).read(20000)
+            try:
+                description_data = urllib2.urlopen(description_url).read(20000)
+            except urllib2.HTTPError as http_error:
+                raise DescriptionDownloadError(package_name, http_error)
+
             version_key = 'Version:'
             for description_line in description_data.split("\n"):
                 if description_line.startswith(version_key):
                     version = description_line[len(version_key):].strip()
                     package_url = 'http://cran.r-project.org/src/contrib/%s_%s.tar.gz' % (package_name, version)
-                    package_data = urllib2.urlopen(package_url).read()
-                    with open(package_path, 'wb') as f:
-                        f.write(package_data)
+                    try:
+                        package_data = urllib2.urlopen(package_url).read()
+                    except urllib2.HTTPError as http_error:
+                        raise ArchiveDownloadError(package_name, http_error)
+                    try:
+                        with open(package_path, 'wb') as f:
+                            f.write(package_data)
+                    except Exception as e:
+                        raise ArchiveSaveError(package_name, e)
                     package_list.append({
                         'name': package_name,
                         'path': package_path
@@ -39,7 +85,10 @@ def refresh_packages(service):
     for package in package_list:
         library_package_path = os.path.join(library_path, package['name'])
         if not os.path.exists(library_package_path):
-            framework.install_package(service, library_path, package['path'])
+            try:
+                framework.install_package(service, library_path, package['path'])
+            except Exception as e:
+                raise PackageInstallError(package['name'], str(e))
 
 
 def iter_stanzas(service):
