@@ -1,6 +1,8 @@
-<nav>
+<!--suppress ALL -->
+<nav color="#0072C6">
     <view name="home" default="true">Home</view>
     <a name="home" href="/dj/redirector/r/home">Home</a>
     <a name="scripts" href="/dj/redirector/r/scripts">Scripts</a>
     <a name="packages" href="/dj/redirector/r/packages">Packages</a>
+    <view name="search" />
 </nav>
