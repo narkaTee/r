@@ -28,6 +28,16 @@ def home(request):
         "request": request,
         "app_id": app_id,
         "app_label": app_label,
+    }
+
+
+@render_to(app_id + ':examples.html')
+@login_required
+def examples(request):
+    return {
+        "request": request,
+        "app_id": app_id,
+        "app_label": app_label,
         "samples": [
             {
                 "id": 'buildsimpletable',
