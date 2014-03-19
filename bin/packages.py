@@ -45,6 +45,15 @@ class ArchiveSaveError(PackageInstallError):
         )
 
 
+def get_package_description_lines(package_name):
+    description_url = 'http://cran.r-project.org/web/packages/%s/DESCRIPTION' % package_name
+    try:
+        description_data = urllib2.urlopen(description_url).read(20000)
+    except urllib2.HTTPError as http_error:
+        raise DescriptionDownloadError(package_name, http_error)
+    return description_data.split("\n")
+
+
 def refresh_packages(service):
     #make sure that required packages are downloaded
     if not os.path.exists(packages_path):
@@ -53,14 +62,9 @@ def refresh_packages(service):
     for stanza, package_name in config.iter_stanzas(service, scheme):
         package_path = os.path.join(packages_path, package_name) + '.tar.gz'
         if not os.path.exists(package_path):
-            description_url = 'http://cran.r-project.org/web/packages/%s/DESCRIPTION' % package_name
-            try:
-                description_data = urllib2.urlopen(description_url).read(20000)
-            except urllib2.HTTPError as http_error:
-                raise DescriptionDownloadError(package_name, http_error)
-
+            lines = get_package_description_lines(package_name)
             version_key = 'Version:'
-            for description_line in description_data.split("\n"):
+            for description_line in lines:
                 if description_line.startswith(version_key):
                     version = description_line[len(version_key):].strip()
                     package_url = 'http://cran.r-project.org/src/contrib/%s_%s.tar.gz' % (package_name, version)

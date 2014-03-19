@@ -20,6 +20,9 @@
             border-bottom: thin solid #bababa;
             padding: 1em;
         }
+        .error{
+            color: #f00;
+        }
     </style>
 {% endblock css %}
 
@@ -43,6 +46,8 @@
                     automatically.
                 </p>
                 <p>
+                    The packages are downloaded from the
+                    <a target="_blank" href="http://cran.r-project.org/web/packages/">CRAN database</a>.
                     To actually use individual packages from within your scripts, you have to load them by
                     calling the <code>packages.install(...)</code> function.
                 </p>
@@ -111,6 +116,17 @@
                                     <input type="text" name="{{add_package_field_name}}">
                                     <input type="submit" value="Add" name="{{add_package_action}}">
                                 </p>
+                                {% if add_error %}
+                                    <p class="error">
+                                        {{ add_error }}
+                                    </p>
+                                {% endif %}
+                                {% if add_fatal_error %}
+                                    <p class="error">
+                                        FATAL ERROR:
+                                        {{ add_fatal_error }}
+                                    </p>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

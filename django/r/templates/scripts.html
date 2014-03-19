@@ -20,6 +20,9 @@
             border-bottom: thin solid #bababa;
             padding: 1em;
         }
+        .error{
+            color: #f00;
+        }
     </style>
 {% endblock css %}
 
@@ -106,6 +109,17 @@
                                     <input type="file" name="{{new_script_field_name}}">
                                     <input type="submit" value="Upload Now" name="{{upload_new_script_action}}">
                                 </p>
+                                {% if add_error %}
+                                    <p class="error">
+                                        {{ add_error }}
+                                    </p>
+                                {% endif %}
+                                {% if add_fatal_error %}
+                                    <p class="error">
+                                        FATAL ERROR:
+                                        {{ add_fatal_error }}
+                                    </p>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

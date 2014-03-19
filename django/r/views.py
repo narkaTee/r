@@ -7,6 +7,7 @@ from splunkdj.setup import config_required
 from splunkdj.setup import create_setup_view_context
 import os
 import sys
+import errors
 
 # allow imports from bin directory
 bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bin')
@@ -80,20 +81,30 @@ def scripts(request):
     delete_script_action_prefix = 'delete_script_'
 
     if request.method == 'POST':
-        #add script stanza
-        if upload_new_script_action in request.POST:
-            source_file = request.FILES[new_script_field_name]
-            if source_file.name.endswith('.r'):
-                source_file_noext, _ = os.path.splitext(source_file.name)
-                scriptlib.add(request.service, source_file_noext, source_file.read())
-        #delete script stanza
-        else:
-            for key in request.POST:
-                if key.startswith(delete_script_action_prefix):
-                    file_name = key[len(delete_script_action_prefix):]
-                    source_file_noext, _ = os.path.splitext(file_name)
-                    scriptlib.remove(request.service, source_file_noext)
-        return HttpResponseRedirect('')
+        try:
+            #add script stanza
+            if upload_new_script_action in request.POST:
+                if new_script_field_name in request.FILES:
+                    source_file = request.FILES[new_script_field_name]
+                    if source_file.name.lower().endswith('.r'):
+                        source_file_noext, _ = os.path.splitext(source_file.name)
+                        scriptlib.add(request.service, source_file_noext, source_file.read())
+                    else:
+                        raise errors.Error('Wrong file extension. It has to be \'r\'.')
+                else:
+                    raise errors.Error('File missing')
+            #delete script stanza
+            else:
+                for key in request.POST:
+                    if key.startswith(delete_script_action_prefix):
+                        file_name = key[len(delete_script_action_prefix):]
+                        source_file_noext, _ = os.path.splitext(file_name)
+                        scriptlib.remove(request.service, source_file_noext)
+        except errors.Error as e:
+            return HttpResponseRedirect('./?add_error=%s' % str(e))
+        except Exception as e:
+            return HttpResponseRedirect('./?add_unknown_error=%s' % str(e))
+        return HttpResponseRedirect('./')
 
     #scan for R script stanzas
     r_scripts = []
@@ -111,6 +122,8 @@ def scripts(request):
         'new_script_field_name': new_script_field_name,
         'upload_new_script_action': upload_new_script_action,
         'delete_script_action_prefix': delete_script_action_prefix,
+        'add_error': request.GET.get('add_error', ''),
+        'add_unknown_error': request.GET.get('add_unknown_error', ''),
     }
 
 
@@ -124,17 +137,23 @@ def packages(request):
     delete_package_action_prefix = 'delete_package_'
 
     if request.method == 'POST':
-        #add package stanza
-        if add_package_action in request.POST:
-            package_name = request.POST[add_package_field_name]
-            packagelib.add(request.service, package_name)
-        #delete package stanza
-        else:
-            for key in request.POST:
-                if key.startswith(delete_package_action_prefix):
-                    package_name = key[len(delete_package_action_prefix):]
-                    packagelib.remove(request.service, package_name)
-        return HttpResponseRedirect('')
+        try:
+            #add package stanza
+            if add_package_action in request.POST:
+                package_name = request.POST[add_package_field_name]
+                packagelib.get_package_description_lines(package_name)
+                packagelib.add(request.service, package_name)
+            #delete package stanza
+            else:
+                for key in request.POST:
+                    if key.startswith(delete_package_action_prefix):
+                        package_name = key[len(delete_package_action_prefix):]
+                        packagelib.remove(request.service, package_name)
+        except errors.Error as e:
+            return HttpResponseRedirect('./?add_error=%s' % str(e))
+        except Exception as e:
+            return HttpResponseRedirect('./?add_unknown_error=%s' % str(e))
+        return HttpResponseRedirect('./')
 
     #scan for package stanzas
     r_packages = []
@@ -152,4 +171,6 @@ def packages(request):
         'add_package_field_name': add_package_field_name,
         'add_package_action': add_package_action,
         'delete_package_action_prefix': delete_package_action_prefix,
+        'add_error': request.GET.get('add_error', ''),
+        'add_unknown_error': request.GET.get('add_unknown_error', ''),
     }
