@@ -17,7 +17,6 @@ import scripts as scriptlib
 import packages as packagelib
 
 app_id = "r"
-app_label = "R - Statistical Computing"
 
 
 @render_to(app_id + ':home.html')
@@ -27,7 +26,7 @@ def home(request):
     return {
         "request": request,
         "app_id": app_id,
-        "app_label": app_label,
+        "app_label": request.service.apps[app_id].label,
     }
 
 
@@ -37,7 +36,7 @@ def examples(request):
     return {
         "request": request,
         "app_id": app_id,
-        "app_label": app_label,
+        "app_label": request.service.apps[app_id].label,
         "samples": [
             {
                 "id": 'buildsimpletable',
@@ -127,7 +126,7 @@ def scripts(request):
 
     return {
         'scripts': r_scripts,
-        'app_title': app_label,
+        'app_label': request.service.apps[app_id].label,
         'request': request,
         'new_script_field_name': new_script_field_name,
         'upload_new_script_action': upload_new_script_action,
@@ -176,7 +175,7 @@ def packages(request):
 
     return {
         'packages': r_packages,
-        'app_title': app_label,
+        'app_label': request.service.apps[app_id].label,
         'request': request,
         'add_package_field_name': add_package_field_name,
         'add_package_action': add_package_action,
