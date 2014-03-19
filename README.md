@@ -1,4 +1,4 @@
-R - Statistical Computing
+Splunk App for R
 ===
 This Splunk app provides a new Splunk search language
 command 'r' that allows passing data from Splunk to the R-Engine
