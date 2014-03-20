@@ -76,7 +76,9 @@
                                                 </td>
                                                 <td>
                                                     {% if s.is_removable %}
-                                                        <input type="submit" value="Delete" name="{{delete_script_action_prefix}}{{s.file_name}}">
+                                                        <button class="btn" name="{{delete_script_action_prefix}}{{s.file_name}}">
+                                                            Delete
+                                                        </button>
                                                     {% else %}
                                                         <span style="font-style: italic">Cannot delete</span>
                                                     {% endif %}
@@ -107,7 +109,7 @@
                             <div class="panel-body">
                                 <p>
                                     <input type="file" name="{{new_script_field_name}}">
-                                    <input type="submit" value="Upload Now" name="{{upload_new_script_action}}">
+                                    <button class="btn" name="{{upload_new_script_action}}">Upload</button>
                                 </p>
                                 {% if add_error %}
                                     <p class="error">

@@ -83,7 +83,9 @@
                                                 </td>
                                                 <td>
                                                     {% if p.is_removable %}
-                                                        <input type="submit" value="Delete" name="{{delete_package_action_prefix}}{{p.name}}">
+                                                        <button class="btn" name="{{delete_package_action_prefix}}{{p.name}}">
+                                                            Delete
+                                                        </button>
                                                     {% else %}
                                                         <span style="font-style: italic">Cannot delete</span>
                                                     {% endif %}
@@ -114,7 +116,9 @@
                             <div class="panel-body">
                                 <p>
                                     <input type="text" name="{{add_package_field_name}}">
-                                    <input type="submit" value="Add" name="{{add_package_action}}">
+                                    <button class="btn" name="{{add_package_action}}">
+                                        Add
+                                    </button>
                                 </p>
                                 {% if add_error %}
                                     <p class="error">
