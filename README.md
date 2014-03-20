@@ -16,8 +16,8 @@ Here's a link the actual [R-Project](http://www.r-project.org/) website.
 
 Usage
 ---
-The command required at least one parameters. The actual R language script.
-A minimal command syntax looks like this:
+The command required one parameters. The actual R language script.
+The syntax looks like this:
 
     | r "<R script>"
 
