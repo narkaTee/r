@@ -23,6 +23,9 @@
         .error{
             color: #f00;
         }
+        .bolder{
+            font-weight: bolder;
+        }
     </style>
 {% endblock css %}
 
@@ -40,16 +43,17 @@
         <div class="dashboard-row">
             <div class="dashboard-cell" style="width: 100%;">
                 <p>
-                    This page allows you to specify packages that should be availalbe
-                    before when running the actual r command script. You jsut have
-                    to specify the package name - downloading and installing is done
-                    automatically.
+                    This page allows you to specify packages that should be available
+                    when running the actual r command script. You just have
+                    to specify the package name - <span class="bolder">downloading</span> and
+                    <span class="bolder">installing</span> is done
+                    <span class="bolder">automatically</span>.
                 </p>
                 <p>
                     The packages are downloaded from the
                     <a target="_blank" href="http://cran.r-project.org/web/packages/">CRAN database</a>.
                     To actually use individual packages from within your scripts, you have to load them by
-                    calling the <code>packages.install(...)</code> function.
+                    calling the <code>library(...)</code> function.
                 </p>
             </div>
         </div>
@@ -115,6 +119,9 @@
                             </div>
                             <div class="panel-body">
                                 <p>
+                                    Just place the package name here and click Add.
+                                </p>
+                                <p>
                                     <input type="text" name="{{add_package_field_name}}">
                                     <button class="btn" name="{{add_package_action}}">
                                         Add
@@ -131,6 +138,13 @@
                                         {{ add_fatal_error }}
                                     </p>
                                 {% endif %}
+                                <p>
+                                    Maybe have a look at the list of
+                                    <a href="http://cran.r-project.org/web/packages/available_packages_by_name.html"
+                                            target="_blank">
+                                        available packages
+                                    </a> in the CRAN database.
+                                </p>
                             </div>
                         </div>
                     </div>
