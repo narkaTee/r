@@ -3,6 +3,13 @@ import config
 import subprocess
 import scripts
 import tempfile
+import errors
+
+
+class RError(errors.Error):
+    def __init__(self, message):
+        self.message = message
+        super(RError, self).__init__(message)
 
 
 def exeute(service, script_path, packages_library_path):
@@ -30,9 +37,9 @@ def exeute(service, script_path, packages_library_path):
         )
         output, error = process.communicate()
         if error is not None and len(error) > 0:
-            raise Exception(error)
+            raise RError(error)
         if output is not None and len(output) > 0:
-            raise Exception(output)
+            raise RError(output)
 
     finally:
         #delete temp file
