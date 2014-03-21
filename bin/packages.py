@@ -4,6 +4,7 @@ import urllib2
 import framework
 import config
 import errors
+from sys import platform as _platform
 
 scheme = 'package'
 packages_path = path.get_named_path('packages')
@@ -67,7 +68,20 @@ def refresh_packages(service):
             for description_line in lines:
                 if description_line.startswith(version_key):
                     version = description_line[len(version_key):].strip()
-                    package_url = 'http://cran.r-project.org/src/contrib/%s_%s.tar.gz' % (package_name, version)
+                    if _platform == "linux" or _platform == "linux2":
+                        # download source version
+                        package_url = 'http://cran.r-project.org/src/contrib/%s_%s.tar.gz' % (package_name, version)
+                    elif _platform == "darwin":
+                        # Mac binary
+                        package_url = 'http://cran.r-project.org/bin/macosx/contrib/r-release/%s_%s.tgz' % (
+                            package_name, version)
+                    elif _platform == "win32":
+                        # Windows binary
+                        package_url = 'http://cran.r-project.org/bin/windows/contrib/r-release/%s_%s.zip' % (
+                            package_name, version)
+                    else:
+                        # download source version
+                        package_url = 'http://cran.r-project.org/src/contrib/%s_%s.tar.gz' % (package_name, version)
                     try:
                         package_data = urllib2.urlopen(package_url).read()
                     except urllib2.HTTPError as http_error:
@@ -77,11 +91,11 @@ def refresh_packages(service):
                             f.write(package_data)
                     except Exception as e:
                         raise ArchiveSaveError(package_name, e)
-                    package_list.append({
-                        'name': package_name,
-                        'path': package_path
-                    })
                     break
+        package_list.append({
+            'name': package_name,
+            'path': package_path
+        })
 
     #make sure that required packages are installed
     if not os.path.exists(library_path):
@@ -91,6 +105,8 @@ def refresh_packages(service):
         if not os.path.exists(library_package_path):
             try:
                 framework.install_package(service, library_path, package['path'])
+            except framework.InstallError as install_error:
+                raise PackageInstallError(package['name'], install_error.message)
             except Exception as e:
                 raise PackageInstallError(package['name'], str(e))
 

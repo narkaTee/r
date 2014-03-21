@@ -47,6 +47,11 @@ def exeute(service, script_path, packages_library_path):
             os.remove(r_output_filename)
 
 
+class InstallError(RError):
+    def __init__(self, message):
+        super(InstallError, self).__init__(message)
+
+
 def install_package(service, library_path, package_path):
     r_path = config.get_r_path(service)
 
@@ -63,6 +68,6 @@ def install_package(service, library_path, package_path):
     )
     _, output = process.communicate()
     if output is None:
-        raise Exception('Unexpected output')
+        raise InstallError('Unexpected output')
     if not 'DONE' in output:
-        raise Exception('Unexpected output: %s' % output)
+        raise InstallError('Unexpected output: %s' % output)
