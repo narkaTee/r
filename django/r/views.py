@@ -32,6 +32,7 @@ def home(request):
 
 @render_to(app_id + ':examples.html')
 @login_required
+@config_required
 def examples(request):
     return {
         "request": request,
