@@ -19,21 +19,31 @@ class PackageInstallError(errors.Error):
         )
 
 
+class DescriptionParseError(PackageInstallError):
+    def __init__(self, name, reason):
+        self.reason = reason
+        super(DescriptionParseError, self).__init__(
+            name,
+            'Attempt to parse CRAN description: %s' % reason
+        )
+
+
 class DescriptionDownloadError(PackageInstallError):
-    def __init__(self, name, http_error):
-        self.http_error = http_error
+    def __init__(self, name, url, reason):
+        self.reason = reason
+        self.url = url
         super(DescriptionDownloadError, self).__init__(
             name,
-            'Attempt to download CRAN description: %s' % str(http_error)
+            'Attempt to download CRAN description from \'%s\': %s' % (url, reason)
         )
 
 
 class ArchiveDownloadError(PackageInstallError):
-    def __init__(self, name, http_error):
-        self.http_error = http_error
+    def __init__(self, name, url, reason):
+        self.reason = reason
         super(ArchiveDownloadError, self).__init__(
             name,
-            'Attempt to download compressed file: %s' % str(http_error)
+            'Attempt to download compressed file from \'%s\': %s' % (url, reason)
         )
 
 
@@ -51,64 +61,125 @@ def get_package_description_lines(package_name):
     try:
         description_data = urllib2.urlopen(description_url).read(20000)
     except urllib2.HTTPError as http_error:
-        raise DescriptionDownloadError(package_name, http_error)
-    return description_data.split("\n")
+        raise DescriptionDownloadError(package_name, description_url, str(http_error))
+    except urllib2.URLError as url_error:
+        raise DescriptionDownloadError(package_name, description_url, url_error.reason)
+    return description_data.split('\n')
 
 
-def refresh_packages(service):
-    #make sure that required packages are downloaded
-    if not os.path.exists(packages_path):
-        os.makedirs(packages_path)
+def get_local_package_filename(package_name):
+    if _platform == "linux" or _platform == "linux2":
+        package_file_name = '%s.tar.gz' % package_name
+    elif _platform == "darwin":
+        package_file_name = '%s.tgz' % package_name
+    elif _platform == "win32":
+        package_file_name = '%s.zip' % package_name
+    else:
+        package_file_name = '%s.tar.gz' % package_name
+    return package_file_name
+
+
+def get_remote_package_url(package_name, version):
+    package_url_prefix = 'http://cran.r-project.org'
+    if _platform == "linux" or _platform == "linux2":
+        package_url = '%s/src/contrib/%s_%s.tar.gz' % (package_url_prefix, package_name, version)
+    elif _platform == "darwin":
+        package_url = '%s/bin/macosx/contrib/r-release/%s_%s.tgz' % (
+            package_url_prefix, package_name, version)
+    elif _platform == "win32":
+        package_url = '%s/bin/windows/contrib/r-release/%s_%s.zip' % (
+            package_url_prefix, package_name, version)
+    else:
+        package_url = '%s/src/contrib/%s_%s.tar.gz' % (package_url_prefix, package_name, version)
+    return package_url
+
+
+def get_package_description_info(package_name):
+    lines = get_package_description_lines(package_name)
+    version_key = 'Version:'
+    version = None
+    for description_line in lines:
+        if description_line.startswith(version_key):
+            version = description_line[len(version_key):].strip()
+    if not version:
+        raise DescriptionParseError(package_name, 'Version field not found')
+    return version
+
+
+def download_package(package_name, package_path, package_url):
+    try:
+        package_data = urllib2.urlopen(package_url).read()
+    except urllib2.HTTPError as http_error:
+        raise ArchiveDownloadError(package_name, package_url, str(http_error))
+    except urllib2.URLError as url_error:
+        raise ArchiveDownloadError(package_name, package_url, url_error.reason)
+    try:
+        with open(package_path, 'wb') as f:
+            f.write(package_data)
+    except Exception as e:
+        raise ArchiveSaveError(package_name, e)
+
+
+def download_packages(service):
+
+    # download required package archives
+    downloded_file_names = set()
     package_list = []
     for stanza, package_name in config.iter_stanzas(service, scheme):
-        package_path = os.path.join(packages_path, package_name) + '.tar.gz'
-        if not os.path.exists(package_path):
-            lines = get_package_description_lines(package_name)
-            version_key = 'Version:'
-            for description_line in lines:
-                if description_line.startswith(version_key):
-                    version = description_line[len(version_key):].strip()
-                    if _platform == "linux" or _platform == "linux2":
-                        # download source version
-                        package_url = 'http://cran.r-project.org/src/contrib/%s_%s.tar.gz' % (package_name, version)
-                    elif _platform == "darwin":
-                        # Mac binary
-                        package_url = 'http://cran.r-project.org/bin/macosx/contrib/r-release/%s_%s.tgz' % (
-                            package_name, version)
-                    elif _platform == "win32":
-                        # Windows binary
-                        package_url = 'http://cran.r-project.org/bin/windows/contrib/r-release/%s_%s.zip' % (
-                            package_name, version)
-                    else:
-                        # download source version
-                        package_url = 'http://cran.r-project.org/src/contrib/%s_%s.tar.gz' % (package_name, version)
-                    try:
-                        package_data = urllib2.urlopen(package_url).read()
-                    except urllib2.HTTPError as http_error:
-                        raise ArchiveDownloadError(package_name, http_error)
-                    try:
-                        with open(package_path, 'wb') as f:
-                            f.write(package_data)
-                    except Exception as e:
-                        raise ArchiveSaveError(package_name, e)
-                    break
+        local_file_name = get_local_package_filename(package_name)
+        local_package_path = os.path.join(packages_path, local_file_name)
+        if not os.path.exists(local_package_path):
+            version = get_package_description_info(package_name)
+            package_url = get_remote_package_url(package_name, version)
+            download_package(package_name, local_package_path, package_url)
         package_list.append({
             'name': package_name,
-            'path': package_path
+            'path': local_package_path
         })
+        downloded_file_names.add(local_file_name)
 
-    #make sure that required packages are installed
-    if not os.path.exists(library_path):
-        os.makedirs(library_path)
-    for package in package_list:
-        library_package_path = os.path.join(library_path, package['name'])
+    # remove packages that are no longer in the list of required packages
+    for filename in os.listdir(packages_path):
+        if not filename in downloded_file_names:
+            script_path = os.path.join(packages_path, filename)
+            os.remove(script_path)
+
+    return package_list
+
+
+def install_packages(downloaded_packages, service):
+
+    # install downloaded packages
+    installes_package_names = set()
+    for package in downloaded_packages:
+        package_name = package['name']
+        library_package_path = os.path.join(library_path, package_name)
         if not os.path.exists(library_package_path):
             try:
                 framework.install_package(service, library_path, package['path'])
             except framework.InstallError as install_error:
-                raise PackageInstallError(package['name'], install_error.message)
+                raise PackageInstallError(package_name, install_error.message)
             except Exception as e:
-                raise PackageInstallError(package['name'], str(e))
+                raise PackageInstallError(package_name, str(e))
+        installes_package_names.add(package_name)
+
+    # uninstall packages that are no longer in the list of required packages
+    for package_name in os.listdir(library_path):
+        if not package_name in installes_package_names:
+            script_path = os.path.join(packages_path, package_name)
+            os.remove(script_path)
+
+
+def update_library(service):
+
+    # make sure directories exists
+    if not os.path.exists(packages_path):
+        os.makedirs(packages_path)
+    if not os.path.exists(library_path):
+        os.makedirs(library_path)
+
+    downloaded_packages = download_packages(service)
+    install_packages(downloaded_packages, service)
 
 
 def iter_stanzas(service):

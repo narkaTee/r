@@ -45,7 +45,7 @@ try:
     lock_file_path = path.get_named_path('r.lock')
     with lockfile.file_lock(lock_file_path):
         scripts.create_files(service)
-        packages.refresh_packages(service)
+        packages.update_library(service)
 
     #collect field names
     fieldnames = set()
