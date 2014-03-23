@@ -5,6 +5,9 @@ import framework
 import config
 import errors
 from sys import platform as _platform
+import shutil
+import re
+from controlfile import ControlFile
 
 scheme = 'package'
 packages_path = path.get_named_path('packages')
@@ -94,16 +97,42 @@ def get_remote_package_url(package_name, version):
     return package_url
 
 
-def get_package_description_info(package_name):
-    lines = get_package_description_lines(package_name)
+def get_package_version(package_name, lines):
     version_key = 'Version:'
-    version = None
     for description_line in lines:
         if description_line.startswith(version_key):
-            version = description_line[len(version_key):].strip()
-    if not version:
-        raise DescriptionParseError(package_name, 'Version field not found')
-    return version
+            return description_line[len(version_key):].strip()
+    raise DescriptionParseError(package_name, 'Version field not found')
+
+
+pkg_name_regex = re.compile(r'\s*(\w+)\s*(?:\(.*\))?\s*')
+
+
+def get_package_dependencies(package_name, description_path):
+    ship_package_names = set()
+    ship_package_names.add('R')
+    ship_package_names.add('graphics')
+    ship_package_names.add('stats')
+    ship_package_names.add('utils')
+    ship_package_names.add('methods')
+    ship_package_names.add('grDevices')
+    ship_package_names.add('grid')
+    ship_package_names.add('parallel')
+    with open(description_path, 'r') as f:
+        control_file = ControlFile(fileobj=f)
+        dependencies = []
+        package_list_keys = ['Depends', 'Imports']
+        for package_list_key in package_list_keys:
+            if package_list_key in control_file.para:
+                depends_value = control_file.para[package_list_key]
+                for depends_component in depends_value.split(','):
+                    match = pkg_name_regex.match(depends_component)
+                    if not match:
+                        raise DescriptionParseError(package_name, 'Invalid \'Depends\' component: %s' % depends_component)
+                    dependend_package_name = match.group(1)
+                    if not dependend_package_name in ship_package_names:
+                        dependencies.append(dependend_package_name)
+        return dependencies
 
 
 def download_package(package_name, package_path, package_url):
@@ -120,57 +149,6 @@ def download_package(package_name, package_path, package_url):
         raise ArchiveSaveError(package_name, e)
 
 
-def download_packages(service):
-
-    # download required package archives
-    downloded_file_names = set()
-    package_list = []
-    for stanza, package_name in config.iter_stanzas(service, scheme):
-        local_file_name = get_local_package_filename(package_name)
-        local_package_path = os.path.join(packages_path, local_file_name)
-        if not os.path.exists(local_package_path):
-            version = get_package_description_info(package_name)
-            package_url = get_remote_package_url(package_name, version)
-            download_package(package_name, local_package_path, package_url)
-        package_list.append({
-            'name': package_name,
-            'path': local_package_path
-        })
-        downloded_file_names.add(local_file_name)
-
-    # remove packages that are no longer in the list of required packages
-    for filename in os.listdir(packages_path):
-        if not filename in downloded_file_names:
-            script_path = os.path.join(packages_path, filename)
-            os.remove(script_path)
-
-    return package_list
-
-
-def install_packages(downloaded_packages, service):
-
-    # install downloaded packages
-    installes_package_names = set()
-    for package in downloaded_packages:
-        package_name = package['name']
-        library_package_path = os.path.join(library_path, package_name)
-        if not os.path.exists(library_package_path):
-            try:
-                framework.install_package(service, library_path, package['path'])
-            except framework.InstallError as install_error:
-                raise PackageInstallError(package_name, install_error.message)
-            except Exception as e:
-                raise PackageInstallError(package_name, str(e))
-        installes_package_names.add(package_name)
-
-    # uninstall packages that are no longer in the list of required packages
-    for package_name in os.listdir(library_path):
-        if not package_name in installes_package_names:
-            if not package_name.startswith('.'):
-                package_path = os.path.join(packages_path, package_name)
-                os.remove(package_path)
-
-
 def update_library(service):
 
     # make sure directories exists
@@ -179,8 +157,60 @@ def update_library(service):
     if not os.path.exists(library_path):
         os.makedirs(library_path)
 
-    downloaded_packages = download_packages(service)
-    install_packages(downloaded_packages, service)
+    downloaded_filenames = set()
+    installes_packages = set()
+
+    def require_package(name):
+        archive_name = get_local_package_filename(name)
+
+        # check if packages is already downloaded
+        if archive_name in downloaded_filenames:
+            return
+
+        # download is not exists
+        archive_path = os.path.join(packages_path, archive_name)
+        if not os.path.exists(archive_path):
+            lines = get_package_description_lines(name)
+            version = get_package_version(name, lines)
+            package_url = get_remote_package_url(name, version)
+            download_package(name, archive_path, package_url)
+        downloaded_filenames.add(archive_name)
+
+        # install package if required
+        library_package_path = os.path.join(library_path, name)
+        if not os.path.exists(library_package_path):
+            try:
+                framework.install_package(service, library_path, name, archive_path)
+            except framework.InstallPackageError as install_error:
+                raise PackageInstallError(name, install_error.message)
+            except Exception as e:
+                raise PackageInstallError(name, str(e))
+        installes_packages.add(name)
+
+        # check dependencies
+        description_path = os.path.join(library_package_path, 'DESCRIPTION')
+        #with open(description_path) as f:
+        #    lines = f.read().split('\n')
+        dependencies = get_package_dependencies(name, description_path)
+        for dependent_package_name in dependencies:
+            require_package(dependent_package_name)
+
+    # download required package archives
+    for stanza, package_name in config.iter_stanzas(service, scheme):
+        require_package(package_name)
+
+    # remove packages that are no longer in the list of required packages
+    for filename in os.listdir(packages_path):
+        if not filename in downloaded_filenames:
+            script_path = os.path.join(packages_path, filename)
+            os.remove(script_path)
+
+    # uninstall packages that are no longer in the list of required packages
+    for package_name in os.listdir(library_path):
+        if not package_name in installes_packages:
+            if not package_name.startswith('.'):
+                package_path = os.path.join(library_path, package_name)
+                shutil.rmtree(package_path)
 
 
 def iter_stanzas(service):

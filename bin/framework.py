@@ -41,11 +41,11 @@ tryCatch(
             f.write(script)
             f.write("""
 },
-error=function(c) {
+error=function(err) {
             fileConn<-file('""")
             f.write(error_path.replace('\\', '\\\\'))
             f.write("""')
-            writeLines(c(conditionMessage(c)), fileConn)
+            writeLines(c(conditionMessage(err)), fileConn)
             close(fileConn)
 })
             """)
@@ -82,17 +82,25 @@ error=function(c) {
             os.remove(script_path)
 
 
-class InstallError(RError):
-    def __init__(self, message):
-        super(InstallError, self).__init__(message)
+class InstallPackageError(RError):
+    def __init__(self, package_name, message):
+        self.package_name = package_name
+        super(InstallPackageError, self).__init__(
+            'Unable to install package \'%s\': %s' % (package_name, message)
+        )
 
 
-def install_package(service, library_path, package_path):
+def install_package(service, library_path, package_name, package_path):
     r_path = config.get_r_path(service)
 
-    #check if the R library is installed
+    # check if the R library is installed
     if not os.path.exists(r_path):
-        raise Exception('R not installed')
+        raise InstallPackageError(package_name, 'R not installed')
+
+    # dont't install if the package already exists in library
+    library_package_path = os.path.join(library_path, package_name)
+    if os.path.exists(library_package_path):
+        raise InstallPackageError(package_name, 'Already installed')
 
     command = "\"" + r_path + "\" CMD INSTALL -l \"" + library_path + "\" \"" + package_path + "\""
     process = subprocess.Popen(
@@ -102,7 +110,7 @@ def install_package(service, library_path, package_path):
         shell=True
     )
     _, output = process.communicate()
-    if output is None:
-        raise InstallError('Unexpected output')
-    if not 'DONE' in output:
-        raise InstallError('Unexpected output: %s' % output)
+
+    # package directory doesn't exists after installation?
+    if not os.path.exists(library_package_path):
+        raise InstallPackageError(package_name, output)
