@@ -59,7 +59,6 @@ try:
 
     input_csv_filename = None
     output_csv_filename = None
-    script_filename = None
     try:
         #create CSV input file
         if fieldnames:
@@ -71,15 +70,15 @@ try:
         #create CSV output file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             output_csv_filename = f.name
-        #create script file
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            script_filename = f.name
-            if input_csv_filename:
-                f.write('input <- read.csv("' + input_csv_filename.replace('\\', '\\\\') + '")\n')
-            f.write(r_snippet + '\n')
-            f.write('write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n')
 
-        framework.exeute(service, script_filename, packages.library_path)
+        #create script file
+        script = ''
+        if input_csv_filename:
+            script += 'input <- read.csv("' + input_csv_filename.replace('\\', '\\\\') + '")\n'
+        script += r_snippet + '\n'
+        script += 'write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n'
+
+        framework.exeute(service, script, packages.library_path)
 
         #read csv output
         output = []
@@ -104,8 +103,6 @@ try:
             os.remove(input_csv_filename)
         if output_csv_filename:
             os.remove(output_csv_filename)
-        if script_filename:
-            os.remove(script_filename)
 
 except errors.Error as e:
     splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e)))

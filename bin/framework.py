@@ -12,7 +12,7 @@ class RError(errors.Error):
         super(RError, self).__init__(message)
 
 
-def exeute(service, script_path, packages_library_path):
+def exeute(service, script, packages_library_path):
     r_path = config.get_r_path(service)
 
     #check if the R library is installed
@@ -20,10 +20,35 @@ def exeute(service, script_path, packages_library_path):
         raise Exception('R not installed')
 
     r_output_filename = None
+    error_path = None
+    script_path = None
     try:
         #create r output file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             r_output_filename = f.name
+
+        #create error file
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            error_path = f.name
+
+        #create script file
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            script_path = f.name
+            f.write("""
+tryCatch(
+{
+            """)
+            f.write(script)
+            f.write("""
+},
+error=function(c) {
+            fileConn<-file('""")
+            f.write(error_path.replace('\\', '\\\\'))
+            f.write("""')
+            writeLines(c(conditionMessage(c)), fileConn)
+            close(fileConn)
+})
+            """)
 
         process = subprocess.Popen(
             "\"" + r_path + "\" --vanilla" + " < \"" + script_path + "\" > \"" + r_output_filename + "\"",
@@ -35,16 +60,26 @@ def exeute(service, script_path, packages_library_path):
                 'R_LIBS_USER': packages_library_path
             },
         )
-        output, error = process.communicate()
-        if error is not None and len(error) > 0:
-            raise RError(error)
-        if output is not None and len(output) > 0:
-            raise RError(output)
+        process.communicate()
+        #output, error = process.communicate()
+        #if error is not None and len(error) > 0:
+        #    raise RError(error)
+        #if output is not None and len(output) > 0:
+        #    raise RError(output)
+
+        with open(error_path) as f:
+            err = f.read()
+            if len(err) > 0:
+                raise RError(err)
 
     finally:
-        #delete temp file
+        #delete temp files
+        if error_path:
+            os.remove(error_path)
         if r_output_filename:
             os.remove(r_output_filename)
+        if script_path:
+            os.remove(script_path)
 
 
 class InstallError(RError):

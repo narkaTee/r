@@ -166,8 +166,9 @@ def install_packages(downloaded_packages, service):
     # uninstall packages that are no longer in the list of required packages
     for package_name in os.listdir(library_path):
         if not package_name in installes_package_names:
-            script_path = os.path.join(packages_path, package_name)
-            os.remove(script_path)
+            if not package_name.startswith('.'):
+                package_path = os.path.join(packages_path, package_name)
+                os.remove(package_path)
 
 
 def update_library(service):
