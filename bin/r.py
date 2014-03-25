@@ -13,6 +13,7 @@ import scripts
 import packages
 import framework
 import errors
+import re
 
 try:
     # check execution mode: it could be 'getinfo' to get some information about
@@ -34,7 +35,7 @@ try:
     keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
     if len(sys.argv) < 2:
         raise Exception("Missing actual R script parameter")
-    r_snippet = sys.argv[1]
+    command_argument = sys.argv[1]
     settings = {}
     input_data = splunk.Intersplunk.readResults(sys.stdin, settings)
 
@@ -75,7 +76,13 @@ try:
         script = ''
         if input_csv_filename:
             script += 'input <- read.csv("' + input_csv_filename.replace('\\', '\\\\') + '")\n'
-        script += r_snippet + '\n'
+        command_argument_regex = re.match(r'^(\w+\.[rR])$', command_argument)
+        if command_argument_regex:
+            script_name = command_argument_regex.group(1)
+            script = 'source(\'' + script_name + '\')\n'
+        else:
+            script_content = command_argument
+            script += script_content + '\n'
         script += 'write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n'
 
         framework.exeute(service, script, packages.library_path)

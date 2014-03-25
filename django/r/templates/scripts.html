@@ -161,6 +161,16 @@ source('add.r')
 result = add(4,2)
 output = data.frame(Result=c(result))
 "</pre>
+                <p>
+                    Instead of including a .R file into the script using the <code>source(...)</code> command,
+                    you can just name the .R script as the argument of the R search command:
+                </p>
+                <pre>
+| r myscript.r
+</pre>
+                <p>
+                    That just runs the <code>myscript.r</code> script.
+                </p>
             </div>
         </div>
     </div>

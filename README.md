@@ -16,14 +16,14 @@ Here's a link the actual [R-Project](http://www.r-project.org/) website.
 
 Usage
 ---
-The command required one parameters. The actual R language script.
-The syntax looks like this:
-
-    | r "<R script>"
-
-... for example:
+The command requires one parameters which is either a actual R language
+script:
 
     | r "output = data.frame(Name=c('A','B','C'),Value=c(1,2,3))"
+
+... or just the name of a R script file that is uploaded to the app:
+
+    | r myscript.r
 
 Features
 ---
