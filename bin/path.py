@@ -1,7 +1,7 @@
 import tempfile
 import os
 
-working_path = os.path.join(tempfile.gettempdir(), 'r')
+working_path = os.path.join(tempfile.gettempdir(), 'r_v4')
 if not os.path.exists(working_path):
     os.makedirs(working_path)
 
