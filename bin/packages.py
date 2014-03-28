@@ -8,10 +8,52 @@ from sys import platform as _platform
 import shutil
 import re
 from controlfile import ControlFile
+import lockfile
 
 scheme = 'package'
 packages_path = path.get_named_path('packages')
 library_path = path.get_named_path('library')
+packages_metadata_path = os.path.join(path.get_named_path('metadata'), 'packages')
+
+_make_sure_directories_exists_called = False
+
+metadata_package_installed = 'Installed'
+metadata_package_installing = 'Installing'
+metadata_package_downloading = 'Downloading'
+metadata_package_installing_dependencies = 'Installing Dependencies'
+metadata_package_installation_error = 'Installation Error'
+metadata_package_not_installed = 'Not Installed'
+
+metadata_package_value_set = set()
+metadata_package_value_set.add(metadata_package_installed)
+metadata_package_value_set.add(metadata_package_installing)
+metadata_package_value_set.add(metadata_package_downloading)
+metadata_package_value_set.add(metadata_package_installing_dependencies)
+metadata_package_value_set.add(metadata_package_installation_error)
+metadata_package_value_set.add(metadata_package_not_installed)
+
+
+def make_sure_directories_exists():
+    if _make_sure_directories_exists_called:
+        return
+    global _make_sure_directories_exists_called
+    _make_sure_directories_exists_called = True
+    if not os.path.exists(packages_path):
+        os.makedirs(packages_path)
+    if not os.path.exists(library_path):
+        os.makedirs(library_path)
+    if not os.path.exists(packages_metadata_path):
+        os.makedirs(packages_metadata_path)
+
+
+def lock_packages_and_library():
+    lock_file_path = path.get_named_path('packages_and_library.lock')
+    return lockfile.file_lock(lock_file_path)
+
+
+def lock_metadata():
+    lock_file_path = path.get_named_path('metadata.lock')
+    return lockfile.file_lock(lock_file_path)
 
 
 class PackageInstallError(errors.Error):
@@ -19,6 +61,15 @@ class PackageInstallError(errors.Error):
         self.name = name
         super(PackageInstallError, self).__init__(
             'Cannot install package \'%s\'. %s' % (name, reason)
+        )
+
+
+class DependendPackageError(PackageInstallError):
+    def __init__(self, name, dependend_package_name, inner_error):
+        self.inner_error = inner_error
+        super(DependendPackageError, self).__init__(
+            name,
+            'Dependend package %s: %s' % (dependend_package_name, str(inner_error))
         )
 
 
@@ -105,19 +156,42 @@ def get_package_version(package_name, lines):
     raise DescriptionParseError(package_name, 'Version field not found')
 
 
-pkg_name_regex = re.compile(r'\s*(\w+)\s*(?:\(.*\))?\s*')
+skip_package_names = set()
+skip_package_names.add('R')
+skip_package_names.add('base')
+skip_package_names.add('boot')
+skip_package_names.add('class')
+skip_package_names.add('cluster')
+skip_package_names.add('codetools')
+skip_package_names.add('compiler')
+skip_package_names.add('datasets')
+skip_package_names.add('foreign')
+skip_package_names.add('graphics')
+skip_package_names.add('grDevices')
+skip_package_names.add('grid')
+skip_package_names.add('KernSmooth')
+skip_package_names.add('lattice')
+skip_package_names.add('MASS')
+skip_package_names.add('Matrix')
+skip_package_names.add('methods')
+skip_package_names.add('mgcv')
+skip_package_names.add('nlme')
+skip_package_names.add('nnet')
+skip_package_names.add('parallel')
+skip_package_names.add('rpart')
+skip_package_names.add('spatial')
+skip_package_names.add('splines')
+skip_package_names.add('stats')
+skip_package_names.add('stats4')
+skip_package_names.add('survival')
+skip_package_names.add('tcltk')
+skip_package_names.add('tools')
+skip_package_names.add('utils')
+
+pkg_name_regex = re.compile(r'\s*([\w\.]+)\s*(?:\(.*\))?\s*')
 
 
 def get_package_dependencies(package_name, description_path):
-    ship_package_names = set()
-    ship_package_names.add('R')
-    ship_package_names.add('graphics')
-    ship_package_names.add('stats')
-    ship_package_names.add('utils')
-    ship_package_names.add('methods')
-    ship_package_names.add('grDevices')
-    ship_package_names.add('grid')
-    ship_package_names.add('parallel')
     with open(description_path, 'r') as f:
         control_file = ControlFile(fileobj=f)
         dependencies = []
@@ -128,9 +202,12 @@ def get_package_dependencies(package_name, description_path):
                 for depends_component in depends_value.split(','):
                     match = pkg_name_regex.match(depends_component)
                     if not match:
-                        raise DescriptionParseError(package_name, 'Invalid \'Depends\' component: %s' % depends_component)
+                        raise DescriptionParseError(
+                            package_name,
+                            'Invalid \'Depends\' component: %s' % depends_component
+                        )
                     dependend_package_name = match.group(1)
-                    if not dependend_package_name in ship_package_names:
+                    if not dependend_package_name in skip_package_names:
                         dependencies.append(dependend_package_name)
         return dependencies
 
@@ -149,68 +226,155 @@ def download_package(package_name, package_path, package_url):
         raise ArchiveSaveError(package_name, e)
 
 
-def update_library(service):
+def get_metadata_package_state_filename(package_name):
+    return package_name
 
-    # make sure directories exists
-    if not os.path.exists(packages_path):
-        os.makedirs(packages_path)
-    if not os.path.exists(library_path):
-        os.makedirs(library_path)
 
-    downloaded_filenames = set()
-    installes_packages = set()
+def get_metadata_package_state_filepath(package_name):
+    return os.path.join(packages_metadata_path, get_metadata_package_state_filename(package_name))
 
-    def require_package(name):
-        archive_name = get_local_package_filename(name)
 
-        # check if packages is already downloaded
-        if archive_name in downloaded_filenames:
+def _update_package_state(package_name, state):
+    with lock_metadata():
+        make_sure_directories_exists()
+        package_metadata_path = get_metadata_package_state_filepath(package_name)
+        with open(package_metadata_path, 'w+') as f:
+            f.write(state)
+    return state
+
+
+def get_package_state(package_name):
+    with lock_metadata():
+        package_metadata_path = get_metadata_package_state_filepath(package_name)
+        if os.path.exists(package_metadata_path):
+            with open(package_metadata_path, 'r') as f:
+                state = f.read()
+            state = state.strip()
+            if state in metadata_package_value_set:
+                return state
+            else:
+                os.remove(package_metadata_path)
+                return get_package_state(package_name)
+        else:
+            library_package_path = os.path.join(library_path, package_name)
+            library_installed = os.path.exists(library_package_path)
+            if library_installed:
+                return _update_package_state(package_name, metadata_package_installed)
+            else:
+                return _update_package_state(package_name, metadata_package_not_installed)
+
+
+def install_package(service, name):
+    with lock_packages_and_library():
+        make_sure_directories_exists()
+
+        # check if packages is already installed or currently installing
+        state = get_package_state(name)
+        if state != metadata_package_not_installed \
+                and state != metadata_package_installation_error:
             return
 
-        # download is not exists
-        archive_path = os.path.join(packages_path, archive_name)
-        if not os.path.exists(archive_path):
-            lines = get_package_description_lines(name)
-            version = get_package_version(name, lines)
-            package_url = get_remote_package_url(name, version)
-            download_package(name, archive_path, package_url)
-        downloaded_filenames.add(archive_name)
+        installed = False
+        try:
+            # download is not exists
+            archive_name = get_local_package_filename(name)
+            archive_path = os.path.join(packages_path, archive_name)
+            if not os.path.exists(archive_path):
+                _update_package_state(name, metadata_package_downloading)
+                lines = get_package_description_lines(name)
+                version = get_package_version(name, lines)
+                package_url = get_remote_package_url(name, version)
+                download_package(name, archive_path, package_url)
 
-        # install package if required
-        library_package_path = os.path.join(library_path, name)
-        if not os.path.exists(library_package_path):
-            try:
-                framework.install_package(service, library_path, name, archive_path)
-            except framework.InstallPackageError as install_error:
-                raise PackageInstallError(name, install_error.message)
-            except Exception as e:
-                raise PackageInstallError(name, str(e))
-        installes_packages.add(name)
+            # install package if required
+            library_package_path = os.path.join(library_path, name)
+            if not os.path.exists(library_package_path):
+                _update_package_state(name, metadata_package_installing)
+                try:
+                    framework.install_package(service, library_path, name, archive_path)
+                except framework.InstallPackageError as install_error:
+                    raise PackageInstallError(name, install_error.message)
+                except Exception as e:
+                    raise PackageInstallError(name, str(e))
 
-        # check dependencies
-        description_path = os.path.join(library_package_path, 'DESCRIPTION')
-        #with open(description_path) as f:
-        #    lines = f.read().split('\n')
-        dependencies = get_package_dependencies(name, description_path)
-        for dependent_package_name in dependencies:
-            require_package(dependent_package_name)
+            # check dependencies
+            description_path = os.path.join(library_package_path, 'DESCRIPTION')
+            dependencies = get_package_dependencies(name, description_path)
+            if len(dependencies) > 0:
+                _update_package_state(name, metadata_package_installing_dependencies)
+                for dependent_package_name in dependencies:
+                    try:
+                        install_package(service, dependent_package_name)
+                    except Exception as e:
+                        raise DependendPackageError(name, dependent_package_name, e)
 
-    # download required package archives
-    for stanza, package_name in config.iter_stanzas(service, scheme):
-        require_package(package_name)
+            installed = True
+        finally:
+            if not installed:
+                state = _update_package_state(name, metadata_package_installation_error)
+            else:
+                state = _update_package_state(name, metadata_package_installed)
+    return state
 
-    # remove packages that are no longer in the list of required packages
-    for filename in os.listdir(packages_path):
-        if not filename in downloaded_filenames:
-            script_path = os.path.join(packages_path, filename)
-            os.remove(script_path)
 
-    # uninstall packages that are no longer in the list of required packages
-    for package_name in os.listdir(library_path):
-        if not package_name in installes_packages:
-            if not package_name.startswith('.'):
-                package_path = os.path.join(library_path, package_name)
-                shutil.rmtree(package_path)
+def dependent_package_names(name):
+    yielded_names = set()
+    library_package_path = os.path.join(library_path, name)
+    description_path = os.path.join(library_package_path, 'DESCRIPTION')
+    dependencies = get_package_dependencies(name, description_path)
+    for dependent_package_name in dependencies:
+        if not dependent_package_name in yielded_names:
+            yielded_names.add(dependent_package_name)
+            for package_name in dependent_package_names(dependent_package_name):
+                yielded_names.add(package_name)
+    return yielded_names
+
+
+def all_package_names(service):
+    yielded_names = set()
+    for _, package_name in config.iter_stanzas(service, scheme):
+        yielded_names.add(package_name)
+        for dependent_package_name in dependent_package_names(package_name):
+            yielded_names.add(dependent_package_name)
+    return yielded_names
+
+
+def update_library(service):
+    with lock_packages_and_library():
+
+        make_sure_directories_exists()
+
+        # download required package archives
+        for stanza, package_name in config.iter_stanzas(service, scheme):
+            install_package(service, package_name)
+
+        # collect files that should be present
+        archive_filenames = set()
+        package_metadata_filenames = set()
+        package_names = all_package_names(service)
+        for package_name in package_names:
+            archive_filenames.add(get_local_package_filename(package_name))
+            package_metadata_filenames.add(get_metadata_package_state_filename(package_name))
+
+        # remove packages that are no longer in the list of required packages
+        for filename in os.listdir(packages_path):
+            if not filename in archive_filenames:
+                script_path = os.path.join(packages_path, filename)
+                os.remove(script_path)
+
+        # uninstall packages that are no longer in the list of required packages
+        for package_name in os.listdir(library_path):
+            if not package_name in package_names:
+                if not package_name.startswith('.'):
+                    package_path = os.path.join(library_path, package_name)
+                    shutil.rmtree(package_path)
+
+        # delete packages metadata that are no longer in the list of required packages
+        for filename in os.listdir(packages_metadata_path):
+            if not filename in package_metadata_filenames:
+                if not filename.startswith('.'):
+                    package_metadata_path = os.path.join(packages_metadata_path, filename)
+                    os.remove(package_metadata_path)
 
 
 def iter_stanzas(service):

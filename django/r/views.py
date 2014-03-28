@@ -1,13 +1,14 @@
 from django.contrib.auth.decorators import login_required
-from splunkdj.decorators.render import render_to
+from splunkdj.decorators.render import render_to, ajax_request
 from .forms import SetupForm
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseServerError
 from splunkdj.setup import config_required
 from splunkdj.setup import create_setup_view_context
 import os
 import sys
 import errors
+import json
 
 # allow imports from bin directory
 bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bin')
@@ -137,9 +138,9 @@ def scripts(request):
     }
 
 
-@render_to(app_id + ':packages.html')
 @login_required
 @config_required
+@render_to(app_id + ':packages.html')
 def packages(request):
 
     add_package_action = 'add_package'
@@ -172,6 +173,7 @@ def packages(request):
             'name': package_name,
             'is_removable': stanza.access['removable'] == '1',
             'owner': stanza.access['owner'],
+            'state': packagelib.get_package_state(package_name),
         })
 
     return {
@@ -183,4 +185,45 @@ def packages(request):
         'delete_package_action_prefix': delete_package_action_prefix,
         'add_error': request.GET.get('add_error', ''),
         'add_unknown_error': request.GET.get('add_unknown_error', ''),
+        'not_installed': packagelib.metadata_package_not_installed
+    }
+
+
+@ajax_request
+def install_package(request):
+    if not request.user.is_authenticated():
+        return HttpResponseServerError('User not authenticated')
+    if not request.is_ajax():
+        return HttpResponseServerError('Is not a AJAX request')
+    if request.method != 'POST':
+        return HttpResponseServerError('Only POST is supported')
+
+    package_name = request.POST['package-name']
+
+    try:
+        packagelib.install_package(request.service, package_name)
+    except packagelib.PackageInstallError as e:
+        return {
+            'state': packagelib.get_package_state(package_name),
+            'error': str(e)
+        }
+
+    return {
+        'state': packagelib.get_package_state(package_name),
+    }
+
+
+@ajax_request
+def package_state(request):
+    if not request.user.is_authenticated():
+        return HttpResponseServerError('User not authenticated')
+    if not request.is_ajax():
+        return HttpResponseServerError('Is not a AJAX request')
+    if request.method != 'GET':
+        return HttpResponseServerError('Only GET is supported')
+
+    package_name = request.GET['package-name']
+
+    return {
+        'state': packagelib.get_package_state(package_name),
     }

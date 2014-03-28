@@ -26,6 +26,10 @@
         .bolder{
             font-weight: bolder;
         }
+        button + button
+        {
+            margin-left: 1em;
+        }
     </style>
 {% endblock css %}
 
@@ -73,6 +77,9 @@
                                             <th style="width: 100px;">
                                                 Owner
                                             </th>
+                                            <th style="width: 120px;">
+                                                State
+                                            </th>
                                             <th>
                                                 Actions
                                             </th>
@@ -86,6 +93,10 @@
                                                     {{p.owner}}
                                                 </td>
                                                 <td>
+                                                    <img src="{{STATIC_URL}}{{app_name}}/progress-wheel.gif" id="state-spinning-{{ p.name }}" style="display: none;" >
+                                                    <span id="state-{{ p.name }}">{{ p.state }}</span>
+                                                </td>
+                                                <td>
                                                     {% if p.is_removable %}
                                                         <button class="btn" name="{{delete_package_action_prefix}}{{p.name}}">
                                                             Delete
@@ -93,12 +104,17 @@
                                                     {% else %}
                                                         <span style="font-style: italic">Cannot delete</span>
                                                     {% endif %}
+                                                    {% if p.state == not_installed %}
+                                                        <button class="btn install-package" type="button" data-packagename="{{ p.name }}">
+                                                            Install Now
+                                                        </button>
+                                                    {% endif %}
                                                 </td>
                                             </tr>
                                         {% endfor %}
                                         {% if not packages %}
                                             <tr>
-                                                <td colspan="2" style="font-style: italic;">
+                                                <td colspan="4" style="font-style: italic;">
                                                     Required packages list is empty
                                                 </td>
                                             </tr>
@@ -163,6 +179,61 @@
             "splunkjs/ready!"
         ];
         require(deps, function(mvc) {
+            $('button.install-package').click(function(){
+                var button = $(this);
+                var packageName = button.attr('data-packagename');
+                button.attr('disabled', 'disabled');
+                var state = $('#state-' + packageName);
+                var spinner = $('#state-spinning-' + packageName);
+                spinner.show();
+                var post = $.post('../install_package/', {
+                    'package-name': packageName
+                });
+                var reload = function(){
+                    var getting = $.get('../package_state/', {
+                        'package-name': packageName
+                    });
+                    var cancel = function(){
+                        getting.abort();
+                    };
+                    getting['done'](function(res,y){
+                        state.text(res.state);
+                        var timeout = setTimeout(function(){
+                            cancel = reload();
+                        },1000);
+                        cancel = function(){
+                            clearTimeout(timeout);
+                        };
+                    });
+                    getting['fail'](function(){
+                        console.log('Unable to update package installation state');
+                        var timeout = setTimeout(function(){
+                            cancel = reload();
+                        },1000);
+                        cancel = function(){
+                            clearTimeout(timeout);
+                        };
+                    });
+                    return function(){
+                        return cancel();
+                    };
+                };
+                var cancelReload = reload();
+                post['done'](function(res,y){
+                    cancelReload();
+                    if(res.error){
+                        alert(res.error);
+                    }
+                    location.reload();
+                });
+                post['fail'](function(){
+                    cancelReload();
+                    button.removeAttr('disabled');
+                    spinner.hide();
+                    alert('A unexpected error occurred');
+                    location.reload();
+                });
+            });
         });
     </script>
 {% endblock js %}

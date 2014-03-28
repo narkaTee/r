@@ -6,9 +6,7 @@ import splunk.Intersplunk
 import os
 import traceback
 import sys
-import lockfile
 from utils import get_service
-import path
 import scripts
 import packages
 import framework
@@ -42,11 +40,9 @@ try:
     #connect to splunk using SDK
     service = get_service(settings['infoPath'])
 
-    #lock installing prerequirements
-    lock_file_path = path.get_named_path('r.lock')
-    with lockfile.file_lock(lock_file_path):
-        scripts.create_files(service)
-        packages.update_library(service)
+    #installing prerequirements
+    scripts.create_files(service)
+    packages.update_library(service)
 
     #collect field names
     fieldnames = set()
