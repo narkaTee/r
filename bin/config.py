@@ -2,25 +2,29 @@
 _r_path = None
 _r_config_file = None
 
-
-def get_r_path(service):
-    global _r_path
-    if _r_path:
-        return _r_path
-    r_config_file = get_r_config_file(service)
-    for stanza in r_config_file.list():
-        if stanza.name == 'paths':
-            _r_path = stanza.__getattr__('r')
-            return _r_path
-    raise Exception('missing r path argument')
+ignore_cache = False
 
 
 def get_r_config_file(service):
-    global _r_config_file
-    if _r_config_file:
-        return _r_config_file
+    if not ignore_cache:
+        global _r_config_file
+        if _r_config_file:
+            return _r_config_file
     _r_config_file = service.confs.create('r')
     return _r_config_file
+
+
+def get_r_path(service):
+    if not ignore_cache:
+        global _r_path
+        if _r_path:
+            return _r_path
+    r_config_file = get_r_config_file(service)
+    for stanza in r_config_file.list():
+        if stanza.name == 'paths':
+            _r_path = getattr(stanza, 'r')
+            return _r_path
+    raise Exception('missing r path argument')
 
 
 def iter_stanzas(service, scheme):

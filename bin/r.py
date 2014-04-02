@@ -1,46 +1,22 @@
-from splunklib.searchcommands import csv as splunkcsv
-del splunkcsv
 import csv
 import tempfile
-import splunk.Intersplunk
 import os
 import traceback
 import sys
-from utils import get_service
 import scripts
 import packages
 import framework
 import errors
 import re
+import path
 
-try:
-    # check execution mode: it could be 'getinfo' to get some information about
-    # how to execute the actual command
-    (isgetinfo, sys.argv) = splunk.Intersplunk.isGetInfo(sys.argv)
-    if isgetinfo:
-        splunk.Intersplunk.outputInfo(
-            streaming=False,  # because it only runs on a search head
-            generating=False,
-            retevs=False,
-            reqsop=False,
-            preop=None,
-            timeorder=True,
-            clear_req_fields=False,
-            req_fields=None
-        )
 
-    #read command options, input headers and data
-    keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
-    if len(sys.argv) < 2:
-        raise Exception("Missing actual R script parameter")
-    command_argument = sys.argv[1]
-    settings = {}
-    input_data = splunk.Intersplunk.readResults(sys.stdin, settings)
-
-    #connect to splunk using SDK
-    service = get_service(settings['infoPath'])
+def r(service, input_data, command_argument):
+    if not input_data:
+        input_data = []
 
     #installing prerequirements
+    path.create_temp_path()
     scripts.create_files(service)
     packages.update_library(service)
 
@@ -81,7 +57,12 @@ try:
             script += script_content + '\n'
         script += 'write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n'
 
-        framework.exeute(service, script, packages.library_path)
+        framework.exeute(
+            service,
+            script,
+            packages.get_library_path(),
+            scripts.get_custom_scripts_path(),
+            )
 
         #read csv output
         output = []
@@ -89,8 +70,7 @@ try:
             reader = csv.reader(f)
             rows = [row for row in reader]
             if len(rows) == 0:
-                splunk.Intersplunk.outputResults([])
-                exit(0)
+                return []
             header_row = rows[0]
             for row in rows[1:]:
                 event = {}
@@ -98,7 +78,7 @@ try:
                     event[header_row[i]] = cell
                 output.append(event)
 
-        splunk.Intersplunk.outputResults(output)
+        return output
 
     #delete temp files
     finally:
@@ -107,8 +87,49 @@ try:
         if output_csv_filename:
             os.remove(output_csv_filename)
 
-except errors.Error as e:
-    splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e)))
 
-except Exception as e:
-    splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e) + ": " + traceback.format_exc()))
+def main():
+    from splunklib.searchcommands import csv as splunkcsv
+    del splunkcsv
+    import splunk.Intersplunk
+    from utils import get_service
+
+    try:
+        # check execution mode: it could be 'getinfo' to get some information about
+        # how to execute the actual command
+        (isgetinfo, sys.argv) = splunk.Intersplunk.isGetInfo(sys.argv)
+        if isgetinfo:
+            splunk.Intersplunk.outputInfo(
+                streaming=False,  # because it only runs on a search head
+                generating=False,
+                retevs=False,
+                reqsop=False,
+                preop=None,
+                timeorder=True,
+                clear_req_fields=False,
+                req_fields=None
+            )
+
+        #read command options, input headers and data
+        keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
+        if len(sys.argv) < 2:
+            raise Exception("Missing actual R script parameter")
+        command_argument = sys.argv[1]
+        settings = {}
+        input_data = splunk.Intersplunk.readResults(sys.stdin, settings)
+
+        #connect to splunk using SDK
+        service = get_service(settings['infoPath'])
+
+        output = r(service, input_data, command_argument)
+        splunk.Intersplunk.outputResults(output)
+
+    except errors.Error as e:
+        splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e)))
+
+    except Exception as e:
+        splunk.Intersplunk.outputResults(
+            splunk.Intersplunk.generateErrorResults(str(e) + ": " + traceback.format_exc()))
+
+if __name__ == '__main__':
+    main()

@@ -1,7 +1,6 @@
 import os
 import config
 import subprocess
-import scripts
 import tempfile
 import errors
 
@@ -12,7 +11,7 @@ class RError(errors.Error):
         super(RError, self).__init__(message)
 
 
-def exeute(service, script, packages_library_path):
+def exeute(service, script, library_path, scripts_path):
     r_path = config.get_r_path(service)
 
     #check if the R library is installed
@@ -55,22 +54,24 @@ error=function(err) {
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
-            cwd=scripts.custom_scripts_path,
+            cwd=scripts_path,
             env={
-                'R_LIBS_USER': packages_library_path
+                'R_LIBS_USER': library_path
             },
         )
-        process.communicate()
-        #output, error = process.communicate()
-        #if error is not None and len(error) > 0:
-        #    raise RError(error)
-        #if output is not None and len(output) > 0:
-        #    raise RError(output)
+        std_output, std_error = process.communicate()
+        if process.returncode:
+            raise RError('Process exited with code %s' % process.returncode)
 
         with open(error_path) as f:
-            err = f.read()
+            err = f.read().strip()
             if len(err) > 0:
-                raise RError(err)
+                if std_error is not None and len(std_error) > 0:
+                    raise RError('%s, %s' % (err, std_error.strip()))
+                elif std_output is not None and len(std_output) > 0:
+                    raise RError('%s, %s' % (err, std_output.strip()))
+                else:
+                    raise RError('%s' % err)
 
     finally:
         #delete temp files

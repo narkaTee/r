@@ -11,9 +11,6 @@ from controlfile import ControlFile
 import lockfile
 
 scheme = 'package'
-packages_path = path.get_named_path('packages')
-library_path = path.get_named_path('library')
-packages_metadata_path = os.path.join(path.get_named_path('metadata'), 'packages')
 
 _make_sure_directories_exists_called = False
 
@@ -33,15 +30,30 @@ metadata_package_value_set.add(metadata_package_installation_error)
 metadata_package_value_set.add(metadata_package_not_installed)
 
 
+def get_packages_path():
+    return path.get_named_path('packages')
+
+
+def get_library_path():
+    return path.get_named_path('library')
+
+
+def get_packages_metadata_path():
+    return os.path.join(path.get_named_path('metadata'), 'packages')
+
+
 def make_sure_directories_exists():
-    if _make_sure_directories_exists_called:
-        return
-    global _make_sure_directories_exists_called
-    _make_sure_directories_exists_called = True
+    #if _make_sure_directories_exists_called:
+    #    return
+    #global _make_sure_directories_exists_called
+    #_make_sure_directories_exists_called = True
+    packages_path = get_packages_path()
     if not os.path.exists(packages_path):
         os.makedirs(packages_path)
+    library_path = get_library_path()
     if not os.path.exists(library_path):
         os.makedirs(library_path)
+    packages_metadata_path = get_packages_metadata_path()
     if not os.path.exists(packages_metadata_path):
         os.makedirs(packages_metadata_path)
 
@@ -231,6 +243,7 @@ def get_metadata_package_state_filename(package_name):
 
 
 def get_metadata_package_state_filepath(package_name):
+    packages_metadata_path = get_packages_metadata_path()
     return os.path.join(packages_metadata_path, get_metadata_package_state_filename(package_name))
 
 
@@ -256,6 +269,7 @@ def get_package_state(package_name):
                 os.remove(package_metadata_path)
                 return get_package_state(package_name)
         else:
+            library_path = get_library_path()
             library_package_path = os.path.join(library_path, package_name)
             library_installed = os.path.exists(library_package_path)
             if library_installed:
@@ -278,6 +292,7 @@ def install_package(service, name):
         try:
             # download is not exists
             archive_name = get_local_package_filename(name)
+            packages_path = get_packages_path()
             archive_path = os.path.join(packages_path, archive_name)
             if not os.path.exists(archive_path):
                 _update_package_state(name, metadata_package_downloading)
@@ -287,6 +302,7 @@ def install_package(service, name):
                 download_package(name, archive_path, package_url)
 
             # install package if required
+            library_path = get_library_path()
             library_package_path = os.path.join(library_path, name)
             if not os.path.exists(library_package_path):
                 _update_package_state(name, metadata_package_installing)
@@ -319,6 +335,7 @@ def install_package(service, name):
 
 def dependent_package_names(name):
     yielded_names = set()
+    library_path = get_library_path()
     library_package_path = os.path.join(library_path, name)
     description_path = os.path.join(library_package_path, 'DESCRIPTION')
     dependencies = get_package_dependencies(name, description_path)
@@ -357,12 +374,14 @@ def update_library(service):
             package_metadata_filenames.add(get_metadata_package_state_filename(package_name))
 
         # remove packages that are no longer in the list of required packages
+        packages_path = get_packages_path()
         for filename in os.listdir(packages_path):
             if not filename in archive_filenames:
                 script_path = os.path.join(packages_path, filename)
                 os.remove(script_path)
 
         # uninstall packages that are no longer in the list of required packages
+        library_path = get_library_path()
         for package_name in os.listdir(library_path):
             if not package_name in package_names:
                 if not package_name.startswith('.'):
@@ -370,6 +389,7 @@ def update_library(service):
                     shutil.rmtree(package_path)
 
         # delete packages metadata that are no longer in the list of required packages
+        packages_metadata_path = get_packages_metadata_path()
         for filename in os.listdir(packages_metadata_path):
             if not filename in package_metadata_filenames:
                 if not filename.startswith('.'):

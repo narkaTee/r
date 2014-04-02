@@ -7,16 +7,25 @@ import datetime
 import lockfile
 
 scheme = 'script'
-custom_scripts_path = path.get_named_path('scripts')
 extension = 'r'
+
+
+def get_custom_scripts_path():
+    return path.get_named_path('scripts')
+
+
+def create_custom_scripts_path():
+    custom_scripts_path = get_custom_scripts_path()
+    if not os.path.exists(custom_scripts_path):
+        os.makedirs(custom_scripts_path)
 
 
 def create_files(service):
     lock_file_path = path.get_named_path('scripts.lock')
     with lockfile.file_lock(lock_file_path):
 
-        if not os.path.exists(custom_scripts_path):
-            os.makedirs(custom_scripts_path)
+        create_custom_scripts_path()
+        custom_scripts_path = get_custom_scripts_path()
 
         filenames = set()
 
