@@ -16,7 +16,6 @@ def r(service, input_data, command_argument):
         input_data = []
 
     #installing prerequirements
-    path.create_temp_path()
     scripts.create_files(service)
     packages.update_library(service)
 

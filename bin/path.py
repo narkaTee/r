@@ -2,21 +2,22 @@ import tempfile
 import os
 
 tempdir = tempfile.gettempdir()
-tempdir_segment = 'r_v4'
+tempdir_segment = 'r_v7'
+_existing_paths = set()
 
 
-def create_temp_path():
-    p = get_temp_path()
-    if not os.path.exists(p):
-        os.makedirs(p)
-
-
-def get_temp_path():
+def delete_path_root():
+    import shutil
     p = os.path.join(tempdir, tempdir_segment)
-    #if not os.path.exists(p):
-    #    os.makedirs(p)
-    return p
+    if os.path.exists(p):
+        shutil.rmtree(p)
+        _existing_paths.remove(p)
 
 
 def get_named_path(name):
-    return os.path.join(get_temp_path(), name)
+    p = os.path.join(tempdir, tempdir_segment)
+    if p not in _existing_paths:
+        if not os.path.exists(p):
+            os.makedirs(p)
+        _existing_paths.add(p)
+    return os.path.join(p, name)

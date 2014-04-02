@@ -21,7 +21,4 @@ class PathTestCase(ConfigTestCase):
         ConfigTestCase.tearDownClass()
 
     def setUp(self):
-        p = path.get_temp_path()
-        if os.path.exists(p):
-            shutil.rmtree(p)
-        #os.makedirs(p)
+        path.delete_path_root()

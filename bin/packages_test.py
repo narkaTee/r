@@ -7,7 +7,6 @@ import packages
 
 class PackagesTestCase(PathTestCase):
     def test_update_library(self):
-        path.create_temp_path()
         service = Service([
             Stanza('package://boot', {}),
         ])
