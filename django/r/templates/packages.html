@@ -134,11 +134,13 @@
                                 <h3>Add Package</h3>
                             </div>
                             <div class="panel-body">
-                                <p>
-                                    Just place the package name here and click Add.
+                                <p id="">
+                                    <label for="{{add_package_field_name}}">
+                                        Just place the package name here and click Add.
+                                    </label>
                                 </p>
                                 <p>
-                                    <input type="text" name="{{add_package_field_name}}">
+                                    <input type="text" name="{{add_package_field_name}}" id="{{add_package_field_name}}">
                                     <button class="btn" name="{{add_package_action}}">
                                         Add
                                     </button>
