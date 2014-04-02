@@ -35,7 +35,7 @@ Features
 
 Status
 ---
-This project is in a very early alpha status and should not be used in a
+This project is in a non-final status and should not be used in a
 production environment.
 
 Installation
