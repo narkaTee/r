@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from splunkdj.decorators.render import render_to, ajax_request
-from .forms import SetupForm
+from ..forms import SetupForm
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseServerError
 from splunkdj.setup import config_required
@@ -122,6 +122,7 @@ def scripts(request):
     for stanza, name in scriptlib.iter_stanzas(request.service):
         r_scripts.append({
             'file_name': name+'.r',
+            'name': name,
             'is_removable': stanza.access['removable'] == '1',
             'owner': stanza.access['owner'],
         })
@@ -226,4 +227,32 @@ def package_state(request):
 
     return {
         'state': packagelib.get_package_state(package_name),
+    }
+
+
+@login_required
+@config_required
+@render_to(app_id + ':script.html')
+def script(request, name):
+
+    if request.method == 'POST':
+        try:
+            if 'cancel' in request.POST:
+                return HttpResponseRedirect('../../scripts/')
+            elif 'save' in request.POST:
+                content = request.POST['content']
+                scriptlib.add(request.service, name, content)
+                return HttpResponseRedirect('../../scripts/')
+        except Exception as e:
+            return HttpResponseRedirect('./?add_error=%s' % str(e))
+        return HttpResponseRedirect('./')
+
+    return {
+        'app_label': request.service.apps[app_id].label,
+        'request': request,
+        'name': name,
+        'script': scriptlib.get(request.service, name),
+        'file_name': name+'.r',
+        'add_error': request.GET.get('add_error', ''),
+        'add_unknown_error': request.GET.get('add_unknown_error', ''),
     }

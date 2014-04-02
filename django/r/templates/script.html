@@ -1,0 +1,63 @@
+{% extends "splunkdj:base_with_app_bar.html" %}
+
+{% load splunkmvc %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}splunkjs/css/dashboard.css" />
+    <style type="text/css">
+        .error{
+            color: #f00;
+        }
+    </style>
+{% endblock css %}
+
+{% block title %}
+    {{ app_label }}
+{% endblock title %}
+
+{% block content %}
+    <div class="dashboard-body container-fluid main-section-body">
+        <div class="dashboard-row">
+            <div class="dashboard-header clearfix">
+                <h2>Edit Script '{{ file_name }}'</h2>
+            </div>
+        </div>
+        <form enctype="multipart/form-data" method="post" action="">
+            {% csrf_token %}
+            <div class="dashboard-row">
+                <div class="dashboard-cell" style="width: 100%;">
+                    <p>
+                        <textarea name="content"
+                                  style="width: 90%; height: 400px;"
+                                {% if not script.is_removable %} disabled="disabled" {% endif %}
+                                >{{ script.content }}</textarea>
+                    </p>
+                    <p>
+                        <button class="btn" name="cancel">Cancel</button>
+                        <button class="btn" name="save"
+                            {% if not script.is_removable %} disabled="disabled" {% endif %}
+                            style="margin-left: 1em;">Save</button>
+                    </p>
+                    {% if add_error %}
+                        <p class="error">
+                            {{ add_error }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock content%}
+
+{% block managers %}
+{% endblock managers %}
+
+{% block js %}
+    <script type="text/javascript">
+        var deps = [
+            "splunkjs/ready!"
+        ];
+        require(deps, function(mvc) {
+        });
+    </script>
+{% endblock js %}

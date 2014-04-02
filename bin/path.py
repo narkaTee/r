@@ -11,7 +11,8 @@ def delete_path_root():
     p = os.path.join(tempdir, tempdir_segment)
     if os.path.exists(p):
         shutil.rmtree(p)
-        _existing_paths.remove(p)
+        if p in _existing_paths:
+            _existing_paths.remove(p)
 
 
 def get_named_path(name):

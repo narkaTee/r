@@ -69,7 +69,9 @@
                                         {% for s in scripts %}
                                             <tr>
                                                 <td>
-                                                    {{s.file_name}}
+                                                    <a href="{% url 'r:script' s.name %}">
+                                                        {{s.file_name}}
+                                                    </a>
                                                 </td>
                                                 <td>
                                                     {{s.owner}}

@@ -60,6 +60,16 @@ def iter_stanzas(service):
     return config.iter_stanzas(service, scheme)
 
 
+def get(service, script_name):
+    for stanza, name in config.iter_stanzas(service, scheme):
+        if name == script_name:
+            return {
+                'content': base64.decodestring(stanza.__getattr__('content')),
+                'is_removable': stanza.access['removable'] == '1',
+            }
+    return None
+
+
 def add(service, name, content):
     config.create_stanza(service, scheme, name, {
         'content': base64.encodestring(content).replace('\n', ''),

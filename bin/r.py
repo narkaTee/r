@@ -8,7 +8,6 @@ import packages
 import framework
 import errors
 import re
-import path
 
 
 def r(service, input_data, command_argument):
