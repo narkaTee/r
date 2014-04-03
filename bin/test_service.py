@@ -69,4 +69,5 @@ class Stanza(object):
         self.deleted = True
 
     def submit(self, attr):
-        self.data.update(attr)
+        for k in attr:
+            self.data[k] = attr[k]
