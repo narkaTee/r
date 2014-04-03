@@ -1,7 +1,6 @@
 from test_service import Service, Stanza
 from path_test import PathTestCase
 import os
-import path
 import packages
 
 

@@ -11,20 +11,13 @@ extension = 'r'
 
 
 def get_custom_scripts_path():
-    return path.get_named_path('scripts')
-
-
-def create_custom_scripts_path():
-    custom_scripts_path = get_custom_scripts_path()
-    if not os.path.exists(custom_scripts_path):
-        os.makedirs(custom_scripts_path)
+    return path.get_directory('scripts')
 
 
 def create_files(service):
-    lock_file_path = path.get_named_path('scripts.lock')
+    lock_file_path = path.get_file('scripts.lock')
     with lockfile.file_lock(lock_file_path):
 
-        create_custom_scripts_path()
         custom_scripts_path = get_custom_scripts_path()
 
         filenames = set()

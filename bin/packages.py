@@ -31,40 +31,24 @@ metadata_package_value_set.add(metadata_package_not_installed)
 
 
 def get_packages_path():
-    return path.get_named_path('packages')
+    return path.get_directory('packages')
 
 
 def get_library_path():
-    return path.get_named_path('library')
+    return path.get_directory('library')
 
 
 def get_packages_metadata_path():
-    return os.path.join(path.get_named_path('metadata'), 'packages')
-
-
-def make_sure_directories_exists():
-    #if _make_sure_directories_exists_called:
-    #    return
-    #global _make_sure_directories_exists_called
-    #_make_sure_directories_exists_called = True
-    packages_path = get_packages_path()
-    if not os.path.exists(packages_path):
-        os.makedirs(packages_path)
-    library_path = get_library_path()
-    if not os.path.exists(library_path):
-        os.makedirs(library_path)
-    packages_metadata_path = get_packages_metadata_path()
-    if not os.path.exists(packages_metadata_path):
-        os.makedirs(packages_metadata_path)
+    return path.get_directory('metadata', 'packages')
 
 
 def lock_packages_and_library():
-    lock_file_path = path.get_named_path('packages_and_library.lock')
+    lock_file_path = path.get_file('packages_and_library.lock')
     return lockfile.file_lock(lock_file_path)
 
 
 def lock_metadata():
-    lock_file_path = path.get_named_path('metadata.lock')
+    lock_file_path = path.get_file('metadata.lock')
     return lockfile.file_lock(lock_file_path)
 
 
@@ -249,7 +233,6 @@ def get_metadata_package_state_filepath(package_name):
 
 def _update_package_state(package_name, state):
     with lock_metadata():
-        make_sure_directories_exists()
         package_metadata_path = get_metadata_package_state_filepath(package_name)
         with open(package_metadata_path, 'w+') as f:
             f.write(state)
@@ -280,7 +263,6 @@ def get_package_state(package_name):
 
 def install_package(service, name):
     with lock_packages_and_library():
-        make_sure_directories_exists()
 
         # check if packages is already installed or currently installing
         state = get_package_state(name)
@@ -358,8 +340,6 @@ def all_package_names(service):
 
 def update_library(service):
     with lock_packages_and_library():
-
-        make_sure_directories_exists()
 
         # download required package archives
         for stanza, package_name in config.iter_stanzas(service, scheme):

@@ -10,9 +10,6 @@ import packages
 
 class FrameworkTestCase(PathTestCase):
     def test_execute(self):
-        scripts.create_custom_scripts_path()
-        packages.make_sure_directories_exists()
-
         service = Service([
             Stanza('script://test1', {}),
             Stanza('package://test2', {}),
@@ -28,12 +25,12 @@ class FrameworkTestCase(PathTestCase):
                 script,
                 packages.get_library_path(),
                 scripts.get_custom_scripts_path(),
-                )
-            with open(output_csv_filename,'r') as f:
+            )
+            with open(output_csv_filename, 'r') as f:
                 reader = csv.reader(f)
                 rows = [row for row in reader]
         finally:
             os.remove(output_csv_filename)
-        self.assertEqual(len(rows),4)
+        self.assertEqual(len(rows), 4)
 
 

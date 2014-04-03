@@ -11,14 +11,24 @@ def delete_path_root():
     p = os.path.join(tempdir, tempdir_segment)
     if os.path.exists(p):
         shutil.rmtree(p)
-        if p in _existing_paths:
-            _existing_paths.remove(p)
+    _existing_paths.clear()
 
 
-def get_named_path(name):
+def get_file(name):
     p = os.path.join(tempdir, tempdir_segment)
     if p not in _existing_paths:
         if not os.path.exists(p):
             os.makedirs(p)
         _existing_paths.add(p)
     return os.path.join(p, name)
+
+
+def get_directory(*segments):
+    p = os.path.join(tempdir, tempdir_segment)
+    for name in segments:
+        p = os.path.join(p, name)
+        if p not in _existing_paths:
+            if not os.path.exists(p):
+                os.makedirs(p)
+            _existing_paths.add(p)
+    return p

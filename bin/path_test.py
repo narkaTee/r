@@ -1,7 +1,5 @@
 from config_test import ConfigTestCase
-import os
 import path
-import shutil
 
 temp_tempdir_segment = None
 
