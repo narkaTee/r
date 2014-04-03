@@ -63,20 +63,20 @@ def r(service, input_data, command_argument):
             )
 
         #read csv output
-        output = []
         with open(output_csv_filename, "r") as f:
             reader = csv.reader(f)
             rows = [row for row in reader]
             if len(rows) == 0:
                 return []
             header_row = rows[0]
+            output = []
             for row in rows[1:]:
                 event = {}
                 for i, cell in enumerate(row):
                     event[header_row[i]] = cell
                 output.append(event)
 
-        return output
+        return header_row, output
 
     #delete temp files
     finally:
@@ -119,8 +119,8 @@ def main():
         #connect to splunk using SDK
         service = get_service(settings['infoPath'])
 
-        output = r(service, input_data, command_argument)
-        splunk.Intersplunk.outputResults(output)
+        header, rows = r(service, input_data, command_argument)
+        splunk.Intersplunk.outputResults(rows, fields=header)
 
     except errors.Error as e:
         splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e)))

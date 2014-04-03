@@ -7,9 +7,9 @@ class RTestCase(PathTestCase):
     def test_r(self):
         service = Service([])
         input_data = [{'Name': 'Robert'}]
-        output_data = r(service, input_data, 'output = input')
-        self.assertEqual(len(output_data), 1)
-        self.assertEqual(output_data[0]['Name'], 'Robert')
+        _, rows = r(service, input_data, 'output = input')
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['Name'], 'Robert')
 
     def test_r_package_installation(self):
         service = Service([
@@ -17,9 +17,9 @@ class RTestCase(PathTestCase):
             Stanza('package://lattice', {}),
         ])
         input_data = [{'Name': 'Robert'}]
-        output_data = r(service, input_data, '''
+        _, rows = r(service, input_data, '''
         library(zoo)
         output = input
         ''')
-        self.assertEqual(len(output_data), 1)
-        self.assertEqual(output_data[0]['Name'], 'Robert')
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['Name'], 'Robert')
