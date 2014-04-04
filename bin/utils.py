@@ -69,3 +69,19 @@ def get_service(search_results_info_path):
         app=search_results_info.ppc_app
     )
     return _service
+
+
+def read_fieldnames_from_command_input(input_buf, has_command_header=True):
+    if has_command_header:
+        while True:
+            line = input_buf.readline()
+            line = line[:-1]
+            if len(line) == 0:
+                break
+
+    csvr = csv.reader(input_buf)
+    fieldnames = []
+    for line in csvr:
+        fieldnames = line
+        break
+    return fieldnames

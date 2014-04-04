@@ -3,30 +3,32 @@ import tempfile
 import os
 import traceback
 import sys
+from StringIO import StringIO
 import scripts
 import packages
 import framework
 import errors
 import re
+import shutil
 
 
-def r(service, input_data, command_argument):
-    if not input_data:
-        input_data = []
+def r(service, events, command_argument, fieldnames=None):
+    if not events:
+        events = []
 
     #installing prerequirements
     scripts.create_files(service)
     packages.update_library(service)
 
     #collect field names
-    fieldnames = set()
-    for result in input_data:
-        for key in list(result.keys()):
-            if not key in fieldnames:
-                fieldnames.add(key)
-    fieldnames = list(fieldnames)
-    if len(fieldnames) == 0:
-        fieldnames = None
+    if fieldnames is None:
+        fieldnames = set()
+        for result in events:
+            for key in list(result.keys()):
+                if not key in fieldnames:
+                    fieldnames.add(key)
+        if len(fieldnames) == 0:
+            fieldnames = None
 
     input_csv_filename = None
     output_csv_filename = None
@@ -37,7 +39,7 @@ def r(service, input_data, command_argument):
                 input_csv_filename = f.name
                 writer = csv.DictWriter(f, fieldnames=list(fieldnames))
                 writer.writeheader()
-                writer.writerows(input_data)
+                writer.writerows(events)
         #create CSV output file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             output_csv_filename = f.name
@@ -60,7 +62,7 @@ def r(service, input_data, command_argument):
             script,
             packages.get_library_path(),
             scripts.get_custom_scripts_path(),
-            )
+        )
 
         #read csv output
         with open(output_csv_filename, "r") as f:
@@ -89,8 +91,10 @@ def r(service, input_data, command_argument):
 def main():
     from splunklib.searchcommands import csv as splunkcsv
     del splunkcsv
+
     import splunk.Intersplunk
-    from utils import get_service
+
+    from utils import get_service, read_fieldnames_from_command_input
 
     try:
         # check execution mode: it could be 'getinfo' to get some information about
@@ -108,18 +112,28 @@ def main():
                 req_fields=None
             )
 
-        #read command options, input headers and data
-        keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
+        #read command arguments
+        #keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
         if len(sys.argv) < 2:
             raise Exception("Missing actual R script parameter")
         command_argument = sys.argv[1]
+
+        # read header, fieldnames, and events from input stream
+        input_data = StringIO()
+        shutil.copyfileobj(sys.stdin, input_data)
+        input_data.seek(0)
+        fieldnames = read_fieldnames_from_command_input(input_buf=input_data)
+        input_data.seek(0)
         settings = {}
-        input_data = splunk.Intersplunk.readResults(sys.stdin, settings)
+        input_events = splunk.Intersplunk.readResults(input_data, settings)
 
         #connect to splunk using SDK
         service = get_service(settings['infoPath'])
 
-        header, rows = r(service, input_data, command_argument)
+        header, rows = r(service,
+                         input_events,
+                         command_argument,
+                         fieldnames=fieldnames)
         splunk.Intersplunk.outputResults(rows, fields=header)
 
     except errors.Error as e:
@@ -128,6 +142,7 @@ def main():
     except Exception as e:
         splunk.Intersplunk.outputResults(
             splunk.Intersplunk.generateErrorResults(str(e) + ": " + traceback.format_exc()))
+
 
 if __name__ == '__main__':
     main()
