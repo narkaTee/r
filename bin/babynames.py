@@ -19,7 +19,7 @@ try:
         for row in reader:
             output.append(row)
 
-    splunk.Intersplunk.outputResults(output)
+    splunk.Intersplunk.outputResults(output, fields=['Year', 'First Name', 'County', 'Sex', 'Count'])
 
 except Exception as e:
     splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e) + ": " + traceback.format_exc()))
