@@ -129,9 +129,9 @@ def get_local_package_filename(package_name):
     return package_file_name
 
 
-def get_remote_package_url(package_name, version):
+def get_remote_package_url(package_name, version, force_source=False):
     package_url_prefix = 'http://cran.r-project.org'
-    if _platform == "linux" or _platform == "linux2":
+    if _platform == "linux" or _platform == "linux2" or force_source:
         package_url = '%s/src/contrib/%s_%s.tar.gz' % (package_url_prefix, package_name, version)
     elif _platform == "darwin":
         package_url = '%s/bin/macosx/contrib/r-release/%s_%s.tgz' % (
@@ -281,7 +281,11 @@ def install_package(service, name):
                 lines = get_package_description_lines(name)
                 version = get_package_version(name, lines)
                 package_url = get_remote_package_url(name, version)
-                download_package(name, archive_path, package_url)
+                try:
+                    download_package(name, archive_path, package_url)
+                except ArchiveDownloadError:
+                    package_url = get_remote_package_url(name, version, force_source=True)
+                    download_package(name, archive_path, package_url)
 
             # install package if required
             library_path = get_library_path()

@@ -13,12 +13,11 @@ class RTestCase(PathTestCase):
 
     def test_r_package_installation(self):
         service = Service([
-            Stanza('package://zoo', {}),
-            Stanza('package://lattice', {}),
+            Stanza('package://race', {}),
         ])
         input_data = [{'Name': 'Robert'}]
         _, rows = r(service, input_data, '''
-        library(zoo)
+        library(race)
         output = input
         ''')
         self.assertEqual(len(rows), 1)
