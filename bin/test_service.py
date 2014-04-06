@@ -6,6 +6,20 @@ class Service(object):
         if not stanzas:
             stanzas = []
         self.confs = Confs(stanzas)
+        self.indexes = {
+            'r': Index('r')
+        }
+
+
+class Index(object):
+    r_file = None
+
+    def __init__(self, name):
+        self.name = name
+        self.service = self
+
+    def post(self, path_segment="", **query):
+        pass
 
 
 class Confs(object):
