@@ -37,21 +37,6 @@ def r(service, events, command_argument, fieldnames=None):
     if not events:
         events = []
 
-    r_id = str(uuid.uuid1())
-
-    log(service, {
-        'r_id': r_id,
-        'action': 'command',
-        'phase': 'pre',
-        'r_script': command_argument,
-        'input_nb_events': len(events),
-        'input_fieldnames': ', '.join(fieldnames),
-        })
-
-    #installing prerequirements
-    scripts.create_files(service)
-    packages.update_library(service)
-
     #collect field names
     if fieldnames is None:
         fieldnames = set()
@@ -61,6 +46,21 @@ def r(service, events, command_argument, fieldnames=None):
                     fieldnames.add(key)
         if len(fieldnames) == 0:
             fieldnames = None
+
+    r_id = str(uuid.uuid1())
+
+    log(service, {
+        'r_id': r_id,
+        'action': 'command',
+        'phase': 'pre',
+        'r_script': command_argument,
+        'input_nb_events': len(events),
+        'input_fieldnames': ', '.join(fieldnames) if fieldnames else '',
+        })
+
+    #installing prerequirements
+    scripts.create_files(service)
+    packages.update_library(service)
 
     input_csv_filename = None
     output_csv_filename = None
@@ -115,7 +115,7 @@ def r(service, events, command_argument, fieldnames=None):
             'action': 'command',
             'phase': 'post',
             'output_nb_events': len(output),
-            'output_fieldnames': ', '.join(header_row),
+            'output_fieldnames': ', '.join(header_row) if header_row else '',
             })
 
         return header_row, output
