@@ -10,11 +10,44 @@ import framework
 import errors
 import re
 import shutil
+import uuid
+from collections import Iterable
+
+
+def log(service, fields):
+    r_index = service.indexes["r"]
+    args = {
+        'index': r_index.name,
+        'source': __file__,
+        'sourcetype': 'r'
+    }
+    body = ''
+    for k in fields:
+        v = fields[k]
+        if isinstance(v, list) or isinstance(v, set):
+            body += ', '.join(['%s=\"%s\" ' % (k, f) for f in v])
+        else:
+            body += '%s=\"%s\" ' % (k, v)
+    r_index.service.post(
+        '/services/receivers/simple',
+        body=body,
+        **args)
 
 
 def r(service, events, command_argument, fieldnames=None):
     if not events:
         events = []
+
+    r_id = str(uuid.uuid1())
+
+    log(service, {
+        'r_id': r_id,
+        'action': 'command',
+        'phase': 'pre',
+        'r_script': command_argument,
+        'input_nb_events': len(events),
+        'input_fieldnames': ', '.join(fieldnames)
+    })
 
     #installing prerequirements
     scripts.create_files(service)
@@ -77,6 +110,14 @@ def r(service, events, command_argument, fieldnames=None):
                 for i, cell in enumerate(row):
                     event[header_row[i]] = cell
                 output.append(event)
+
+        log(service, {
+            'r_id': r_id,
+            'action': 'command',
+            'phase': 'post',
+            'output_nb_events': len(output),
+            'output_fieldnames': ', '.join(header_row)
+        })
 
         return header_row, output
 
