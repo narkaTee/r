@@ -11,7 +11,6 @@ import errors
 import re
 import shutil
 import uuid
-from collections import Iterable
 
 
 def log(service, fields):
@@ -46,8 +45,8 @@ def r(service, events, command_argument, fieldnames=None):
         'phase': 'pre',
         'r_script': command_argument,
         'input_nb_events': len(events),
-        'input_fieldnames': ', '.join(fieldnames)
-    })
+        'input_fieldnames': ', '.join(fieldnames),
+        })
 
     #installing prerequirements
     scripts.create_files(service)
@@ -116,8 +115,8 @@ def r(service, events, command_argument, fieldnames=None):
             'action': 'command',
             'phase': 'post',
             'output_nb_events': len(output),
-            'output_fieldnames': ', '.join(header_row)
-        })
+            'output_fieldnames': ', '.join(header_row),
+            })
 
         return header_row, output
 
@@ -131,6 +130,7 @@ def r(service, events, command_argument, fieldnames=None):
 
 def main():
     from splunklib.searchcommands import csv as splunkcsv
+
     del splunkcsv
 
     import splunk.Intersplunk
