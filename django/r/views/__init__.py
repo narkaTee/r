@@ -20,17 +20,6 @@ import packages as packagelib
 app_id = "r"
 
 
-@render_to(app_id + ':home.html')
-@login_required
-@config_required
-def home(request):
-    return {
-        "request": request,
-        "app_id": app_id,
-        "app_label": request.service.apps[app_id].label,
-    }
-
-
 @render_to(app_id + ':examples.html')
 @login_required
 @config_required

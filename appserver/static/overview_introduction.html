@@ -1,0 +1,19 @@
+<h2>
+    Introduction
+</h2>
+<p>
+    This app provides a new Splunk search language command <code>r</code> that
+    allows passing data from Splunk to the <a href="http://www.r-project.org/" target="_blank">R-Engine</a> for
+    calculation and then passing results back to Splunk for further
+    computation or visualization.
+</p>
+<p>
+    <img src="../../../../dj/static/r/Introduction.svg" style="width: 100%; max-height: 300px;"/>
+</p>
+<ul>
+    <li>Integration of a R script into the Splunk search pipeline
+    <li>Upload custom scripts (use the <code>source(...)</code> function to include them into the pipeline script)
+    <li>Manage external packages (use the <code>library(...)</code> function to load them from the pipeline script)
+    <li>Supports generating and streaming command mode
+    <li>Show R error messages on the Splunk UI
+</ul>
