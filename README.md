@@ -32,6 +32,7 @@ Features
 - Manage external packages (use the *library()* function to load them from the pipeline script)
 - Supports generating and streaming command mode
 - Show R error messages on the Splunk UI
+- Provide usage statitics of the app itself
 
 Status
 ---
