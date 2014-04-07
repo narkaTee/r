@@ -120,6 +120,15 @@ def r(service, events, command_argument, fieldnames=None):
 
         return header_row, output
 
+    except Exception as e:
+        log(service, {
+            'r_id': r_id,
+            'action': 'command',
+            'phase': 'exception',
+            'exception': str(e),
+            })
+        raise
+
     #delete temp files
     finally:
         if input_csv_filename:
