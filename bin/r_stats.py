@@ -15,23 +15,16 @@ def r_stats(service):
 
     stats_id = str(uuid.uuid1())
 
-    log(service, {
-        'stats_id': stats_id,
-        'stats_action': 'pre',
-        })
-
     number_of_packages = 0
     for _, package_name in config.iter_stanzas(service, packages.scheme):
         log(service, {
             'stats_id': stats_id,
-            'stats_action': 'stats_packages_package',
             'stats_package_name': package_name,
             })
         number_of_packages += 1
 
     log(service, {
         'stats_id': stats_id,
-        'stats_action': 'stats_packages_summary',
         'stats_number_of_packages': number_of_packages,
         })
 
