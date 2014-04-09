@@ -4,26 +4,11 @@ import errors
 import config
 import uuid
 import packages
+import index_logging
 
 
 def log(service, fields):
-    r_index = service.indexes["r"]
-    args = {
-        'index': r_index.name,
-        'source': __file__,
-        'sourcetype': 'r'
-    }
-    body = ''
-    for k in fields:
-        v = fields[k]
-        if isinstance(v, list) or isinstance(v, set):
-            body += ', '.join(['%s=\"%s\" ' % (k, f) for f in v])
-        else:
-            body += '%s=\"%s\" ' % (k, v)
-    r_index.service.post(
-        '/services/receivers/simple',
-        body=body,
-        **args)
+    index_logging.log(service, __file__, fields)
 
 
 def r_stats(service):

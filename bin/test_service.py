@@ -12,14 +12,22 @@ class Service(object):
 
 
 class Index(object):
-    r_file = None
 
     def __init__(self, name):
         self.name = name
-        self.service = self
+        self.service = IndexService()
+
+
+class IndexService(object):
+
+    def __init__(self):
+        self.posts = []
 
     def post(self, path_segment="", **query):
-        pass
+        self.posts.append({
+            'path_segment': path_segment,
+            'query': query
+        })
 
 
 class Confs(object):
