@@ -61,7 +61,16 @@ error=function(err) {
         )
         std_output, std_error = process.communicate()
         if process.returncode:
-            raise RError('Process exited with code %s' % process.returncode)
+            if std_error is not None and len(std_error) > 0:
+                output = std_error.strip()
+            elif std_output is not None and len(std_output) > 0:
+                output = std_output.strip()
+            else:
+                output = None
+            if output:
+                raise RError('Process exited with code %s: %s' % (process.returncode, output))
+            else:
+                raise RError('Process exited with code %s' % process.returncode)
 
         with open(error_path) as f:
             err = f.read().strip()
