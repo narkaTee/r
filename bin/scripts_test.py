@@ -26,7 +26,7 @@ class ScriptsTestCase(PathTestCase):
         )
 
         time.sleep(1.5)
-        scripts.add(service,'test',"""
+        scripts.add(service, 'test', """
 add <- function(a,b) {
   c = a+b
   return(c)
