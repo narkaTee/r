@@ -82,7 +82,7 @@ def r(service, events, command_argument, fieldnames=None):
         command_argument_regex = re.match(r'^(\w+\.[rR])$', command_argument)
         if command_argument_regex:
             script_name = command_argument_regex.group(1)
-            script = 'source(\'' + script_name + '\')\n'
+            script += 'source(\'' + script_name + '\')\n'
         else:
             script_content = command_argument
             script += script_content + '\n'
