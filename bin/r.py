@@ -100,17 +100,21 @@ def r(service, events, command_argument, fieldnames=None):
         with open(output_library_usage_csv_filename, "r") as f:
             reader = csv.reader(f)
             rows = [row for row in reader]
+            package_names = set()
             if len(rows) > 0:
                 header_row = rows[0]
                 for row in rows[1:]:
                     event = {}
                     for i, cell in enumerate(row):
                         event[header_row[i]] = cell
-                    log(service, {
-                        'r_id': r_id,
-                        'action': 'package_usage',
-                        'package_name': event['name'],
-                        })
+                    package_name = event['name']
+                    if not package_name in package_names:
+                        package_names.add(package_name)
+                        log(service, {
+                            'r_id': r_id,
+                            'action': 'package_usage',
+                            'package_name': package_name,
+                            })
 
         #read csv output
         with open(output_csv_filename, "r") as f:
