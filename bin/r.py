@@ -1,3 +1,4 @@
+# coding=utf-8
 import csv
 import tempfile
 import os
@@ -49,6 +50,7 @@ def r(service, events, command_argument, fieldnames=None):
 
     input_csv_filename = None
     output_csv_filename = None
+    output_library_usage_csv_filename = None
     try:
         #create CSV input file
         if fieldnames:
@@ -57,12 +59,24 @@ def r(service, events, command_argument, fieldnames=None):
                 writer = csv.DictWriter(f, fieldnames=list(fieldnames))
                 writer.writeheader()
                 writer.writerows(events)
-        #create CSV output file
+        #create CSV output files
         with tempfile.NamedTemporaryFile(delete=False) as f:
             output_csv_filename = f.name
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            output_library_usage_csv_filename = f.name
 
         #create script file
-        script = ''
+        script = 'library.usage = data.frame(name=c()) \n'
+        script += 'original_library = library \n'
+        script += 'new_library <- function(pkg, help, pos = 2, lib.loc = NULL, character.only = FALSE, '
+        script += ' logical.return = FALSE, warn.conflicts = TRUE, quietly = FALSE, verbose = getOption("verbose"))\n'
+        script += '{\n'
+        script += '  if( is.symbol(substitute(pkg)) ) pkg=deparse(substitute(pkg))\n'
+        script += '  library.usage <<- rbind(library.usage, data.frame(name=pkg))\n'
+        script += '  return (original_library(package=pkg, help, pos, lib.loc, character.only=TRUE, logical.return,'
+        script += '    warn.conflicts, quietly , verbose))'
+        script += '}\n'
+        script += 'library = new_library\n'
         if input_csv_filename:
             script += 'input <- read.csv("' + input_csv_filename.replace('\\', '\\\\') + '")\n'
         command_argument_regex = re.match(r'^(\w+\.[rR])$', command_argument)
@@ -73,6 +87,7 @@ def r(service, events, command_argument, fieldnames=None):
             script_content = command_argument
             script += script_content + '\n'
         script += 'write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n'
+        script += 'write.csv(library.usage, file = "' + output_library_usage_csv_filename.replace('\\', '\\\\') + '")\n'
 
         framework.exeute(
             service,
@@ -80,6 +95,22 @@ def r(service, events, command_argument, fieldnames=None):
             packages.get_library_path(),
             scripts.get_custom_scripts_path(),
         )
+
+        #read library usage
+        with open(output_library_usage_csv_filename, "r") as f:
+            reader = csv.reader(f)
+            rows = [row for row in reader]
+            if len(rows) > 0:
+                header_row = rows[0]
+                for row in rows[1:]:
+                    event = {}
+                    for i, cell in enumerate(row):
+                        event[header_row[i]] = cell
+                    log(service, {
+                        'r_id': r_id,
+                        'action': 'package_usage',
+                        'package_name': event['name'],
+                        })
 
         #read csv output
         with open(output_csv_filename, "r") as f:
@@ -120,6 +151,8 @@ def r(service, events, command_argument, fieldnames=None):
             os.remove(input_csv_filename)
         if output_csv_filename:
             os.remove(output_csv_filename)
+        if output_library_usage_csv_filename:
+            os.remove(output_library_usage_csv_filename)
 
 
 def main():
