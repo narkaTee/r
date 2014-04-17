@@ -245,3 +245,9 @@ def script(request, name):
         'add_error': request.GET.get('add_error', ''),
         'add_unknown_error': request.GET.get('add_unknown_error', ''),
     }
+
+
+@login_required
+@config_required
+def default(request):
+    return HttpResponseRedirect('../../../app/r/overview')
