@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}splunkdj/setup.css" />
     <style>
         .splunkdj-setup-form {
-            max-width: 400px;
+            max-width: 650px;
             _width: inherit;
             margin: 30px;
         }
@@ -49,11 +49,14 @@
             <a class="r-download-button" target="_blank" href="http://cran.r-mirror.de/bin/windows/base/release.htm">
                 Download for Windows
             </a>
+            <a class="r-download-button" target="_blank" href="http://mirrors.softliste.de/cran/bin/linux/">
+                Download for Linux/Unix
+            </a>
         </p>
         <p>
             After installing, please check the installation path.
             For Windows, it should be something like <code>C:\Program Files\R\R-3.0.3\bin\R.exe</code>.
-            For Mac OS X, it's probably <code>/usr/bin/R</code>.
+            For Mac OS X and Linux or Unix, it's probably <code>/usr/bin/R</code>.
         </p>
         {% csrf_token %}
         {{ form.as_p }}
