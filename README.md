@@ -46,8 +46,7 @@ You can also clone the [repository](https://github.com/rfsp/r) to install the ap
 
 Platforms
 ---
-Currently only Mac OS X and Windows are supported.
-Linux and Unix will be supported in future.
+This app runs on a wide variety of Linux and Unix platforms, Windows and Mac OS X.
 
 Contribute
 ---
