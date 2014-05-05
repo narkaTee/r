@@ -39,6 +39,13 @@ Status
 This project is in a non-final status and should not be used in a
 production environment.
 
+Users of this app (or the *r* search command) need the following Splunk permissions:
+
+- *admin_all_objects*
+- *edit_tcp*
+
+Future version may remove this requirement.
+
 Installation
 ---
 This app is available on the [Splunk App Store](http://apps.splunk.com/app/1735/).

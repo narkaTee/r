@@ -13,10 +13,18 @@ import re
 import shutil
 import uuid
 import index_logging
+from splunklib import binding as splunk_binding
 
 
 def log(service, fields):
-    index_logging.log(service, __file__, fields)
+    try:
+        index_logging.log(service, __file__, fields)
+    except splunk_binding.HTTPError as http_error:
+        if http_error.status == 403:
+            raise Exception(
+                'Maybe you don\'t have the \'edit_tcp\' permissions. %s' % http_error)
+        else:
+            raise
 
 
 def r(service, events, command_argument, fieldnames=None):
