@@ -11,12 +11,31 @@ class RError(errors.Error):
         super(RError, self).__init__(message)
 
 
+def verify_r_path(r_path, raise_error):
+    if not os.path.exists(r_path):
+        raise_error('Cannot find R at path \'%s\'' % r_path)
+        return False
+    if os.path.isdir(r_path):
+        raise_error('Path \'%s\' points to a directory, but it should point to the R executalbe.' % r_path)
+        return False
+    if os.name != 'nt':
+        if not os.access(r_path, os.X_OK):
+            raise_error('Path \'%s\' points to non-executable file, but it should point to the R executalbe.' % r_path)
+            return False
+    else:
+        if not r_path.endswith('.exe') and not r_path.endswith('.EXE'):
+            raise_error('Path \'%s\' doesn\'t point to a .EXE file, but it should point to the R executalbe.' % r_path)
+            return False
+    return True
+
+
 def exeute(service, script, library_path, scripts_path):
     r_path = config.get_r_path(service)
 
     #check if the R library is installed
-    if not os.path.exists(r_path):
-        raise Exception('R not installed')
+    def raise_e_path_error(msg):
+        raise RError(msg)
+    verify_r_path(r_path, raise_e_path_error)
 
     r_output_filename = None
     error_path = None
@@ -103,9 +122,10 @@ class InstallPackageError(RError):
 def install_package(service, library_path, package_name, package_path):
     r_path = config.get_r_path(service)
 
-    # check if the R library is installed
-    if not os.path.exists(r_path):
-        raise InstallPackageError(package_name, 'R not installed')
+    #check if the R library is installed
+    def raise_e_path_error(msg):
+        raise InstallPackageError(package_name, msg)
+    verify_r_path(r_path, raise_e_path_error)
 
     # dont't install if the package already exists in library
     library_package_path = os.path.join(library_path, package_name)
