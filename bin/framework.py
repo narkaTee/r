@@ -68,9 +68,9 @@ error=function(err) {
             else:
                 output = None
             if output:
-                raise RError('Process exited with code %s: %s' % (process.returncode, output))
+                raise RError('R exited with code %s: %s' % (process.returncode, output))
             else:
-                raise RError('Process exited with code %s' % process.returncode)
+                raise RError('R exited with code %s' % process.returncode)
 
         with open(error_path) as f:
             err = f.read().strip()
