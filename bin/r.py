@@ -16,9 +16,9 @@ import index_logging
 from splunklib import binding as splunk_binding
 
 
-def log(service, fields):
+def log(fields):
     try:
-        index_logging.log(service, __file__, fields)
+        index_logging.log(__file__, fields)
     except splunk_binding.HTTPError as http_error:
         if http_error.status == 403:
             raise Exception(
@@ -43,7 +43,7 @@ def r(service, events, command_argument, fieldnames=None):
 
     r_id = str(uuid.uuid1())
 
-    log(service, {
+    log({
         'r_id': r_id,
         'action': 'command',
         'phase': 'pre',
@@ -82,7 +82,7 @@ def r(service, events, command_argument, fieldnames=None):
         script += '  if( is.symbol(substitute(pkg)) ) pkg=deparse(substitute(pkg))\n'
         script += '  library.usage <<- rbind(library.usage, data.frame(name=pkg))\n'
         script += '  return (original_library(package=pkg, help, pos, lib.loc, character.only=TRUE, logical.return,'
-        script += '    warn.conflicts, quietly , verbose))'
+        script += '    warn.conflicts, quietly , verbose))\n'
         script += '}\n'
         script += 'library = new_library\n'
         if input_csv_filename:
@@ -118,7 +118,7 @@ def r(service, events, command_argument, fieldnames=None):
                     package_name = event['name']
                     if not package_name in package_names:
                         package_names.add(package_name)
-                        log(service, {
+                        log({
                             'r_id': r_id,
                             'action': 'package_usage',
                             'package_name': package_name,
@@ -138,7 +138,7 @@ def r(service, events, command_argument, fieldnames=None):
                     event[header_row[i]] = cell
                 output.append(event)
 
-        log(service, {
+        log({
             'r_id': r_id,
             'action': 'command',
             'phase': 'post',
@@ -149,7 +149,7 @@ def r(service, events, command_argument, fieldnames=None):
         return header_row, output
 
     except Exception as e:
-        log(service, {
+        log({
             'r_id': r_id,
             'action': 'command',
             'phase': 'exception',

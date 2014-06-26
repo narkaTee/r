@@ -7,8 +7,8 @@ import packages
 import index_logging
 
 
-def log(service, fields):
-    index_logging.log(service, __file__, fields)
+def log(fields):
+    index_logging.log(__file__, fields)
 
 
 def r_stats(service):
@@ -17,13 +17,13 @@ def r_stats(service):
 
     number_of_packages = 0
     for _, package_name in config.iter_stanzas(service, packages.scheme):
-        log(service, {
+        log({
             'stats_id': stats_id,
             'stats_package_name': package_name,
             })
         number_of_packages += 1
 
-    log(service, {
+    log({
         'stats_id': stats_id,
         'stats_number_of_packages': number_of_packages,
         })

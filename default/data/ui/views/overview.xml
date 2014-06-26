@@ -6,7 +6,7 @@
   <row>
     <chart>
       <title>R Executions</title>
-      <searchString>index=r action=command phase=pre | timechart span=1d count</searchString>
+      <searchString>index=_internal sourcetype=r action=command phase=pre | timechart span=1d count</searchString>
       <earliestTime>-7d@h</earliestTime>
       <latestTime>now</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -26,7 +26,7 @@
     </chart>
     <chart>
       <title>R Errors</title>
-      <searchString>index=r action=command phase=exception | timechart span=1d count</searchString>
+      <searchString>index=_internal sourcetype=r action=command phase=exception | timechart span=1d count</searchString>
       <earliestTime>-7d@h</earliestTime>
       <latestTime>now</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -48,7 +48,7 @@
   <row>
     <chart>
       <title>Events sent to R</title>
-      <searchString>index=r action=command | timechart span=1d sum(input_nb_events)</searchString>
+      <searchString>index=_internal sourcetype=r action=command | timechart span=1d sum(input_nb_events)</searchString>
       <earliestTime>-7d@h</earliestTime>
       <latestTime>now</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -68,7 +68,7 @@
     </chart>
     <chart>
       <title>Events received from R</title>
-      <searchString>index=r action=command | timechart span=1d sum(output_nb_events)</searchString>
+      <searchString>index=_internal sourcetype=r action=command | timechart span=1d sum(output_nb_events)</searchString>
       <earliestTime>-7d@h</earliestTime>
       <latestTime>now</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -90,7 +90,7 @@
   <row>
     <chart>
       <title>Package Usage</title>
-      <searchString>index=r action=package_usage | timechart span=1d count(package_name) by package_name</searchString>
+      <searchString>index=_internal sourcetype=r action=package_usage | timechart span=1d count(package_name) by package_name</searchString>
       <earliestTime>-7d@h</earliestTime>
       <latestTime>now</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -110,7 +110,7 @@
     </chart>
     <chart>
       <title>Installed Packages</title>
-      <searchString>index=r | timechart span=1d max(stats_number_of_packages)</searchString>
+      <searchString>index=_internal sourcetype=r | timechart span=1d max(stats_number_of_packages)</searchString>
       <earliestTime>-7d@h</earliestTime>
       <latestTime>now</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>

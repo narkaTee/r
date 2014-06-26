@@ -6,28 +6,29 @@ class Service(object):
         if not stanzas:
             stanzas = []
         self.confs = Confs(stanzas)
-        self.indexes = {
-            'r': Index('r')
-        }
+        #self.indexes = {
+        #    'r': Index('r')
+        #}
 
 
-class Index(object):
+#class Index(object):
+#
+#    def __init__(self, name):
+#        self.name = name
+#        self.service = IndexService()
 
-    def __init__(self, name):
-        self.name = name
-        self.service = IndexService()
 
-
-class IndexService(object):
-
-    def __init__(self):
-        self.posts = []
-
-    def post(self, path_segment="", **query):
-        self.posts.append({
-            'path_segment': path_segment,
-            'query': query
-        })
+#class IndexService(object):
+#
+#    def __init__(self):
+#        #self.posts = []
+#        pass
+#
+#    def post(self, path_segment="", **query):
+#        self.posts.append({
+#            'path_segment': path_segment,
+#            'query': query
+#        })
 
 
 class Confs(object):
