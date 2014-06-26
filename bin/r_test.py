@@ -25,6 +25,9 @@ class RTestCase(PathTestCase):
         self.assertEqual(rows[0]['Name'], 'Robert')
 
     def test_r_package_usage(self):
+        import index_logging
+        index_logging.clear_log_entries()
+
         service = Service([
             Stanza('package://race', {}),
             Stanza('package://boot', {}),
@@ -35,18 +38,17 @@ class RTestCase(PathTestCase):
         library(race)
         output = data.frame(h1=c('v1'))
         ''')
-        indexed_events = [post['query']['body'] for post in service.indexes['r'].service.posts]
+        indexed_events = index_logging.get_log_entries()
         self.assertEqual(len(indexed_events), 4)
-        post = service.indexes['r'].service.posts[1]
-        body = post['query']['body']
-        self.assertTrue('action=\"package_usage\"' in body)
-        self.assertTrue('package_name=\"race\"' in body)
-        post = service.indexes['r'].service.posts[2]
-        body = post['query']['body']
-        self.assertTrue('action=\"package_usage\"' in body)
-        self.assertTrue('package_name=\"boot\"' in body)
+        self.assertTrue('action=\"package_usage\"' in indexed_events[1])
+        self.assertTrue('package_name=\"race\"' in indexed_events[1])
+        self.assertTrue('action=\"package_usage\"' in indexed_events[2])
+        self.assertTrue('package_name=\"boot\"' in indexed_events[2])
 
     def test_r_package_usage_from_custom_script(self):
+        import index_logging
+        index_logging.clear_log_entries()
+
         service = Service([
             Stanza('package://race', {}),
             Stanza('package://boot', {}),
@@ -61,9 +63,7 @@ class RTestCase(PathTestCase):
         output = data.frame(Result=c(result))
         """)
         _, rows = r(service, None, 'test.r')
-        indexed_events = [post['query']['body'] for post in service.indexes['r'].service.posts]
+        indexed_events = index_logging.get_log_entries()
         self.assertEqual(len(indexed_events), 3)
-        post = service.indexes['r'].service.posts[1]
-        body = post['query']['body']
-        self.assertTrue('action=\"package_usage\"' in body)
-        self.assertTrue('package_name=\"race\"' in body)
+        self.assertTrue('action=\"package_usage\"' in indexed_events[1])
+        self.assertTrue('package_name=\"race\"' in indexed_events[1])

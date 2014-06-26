@@ -28,13 +28,23 @@ def setup_logging():
 setup_logging()
 
 
+if 'TEST' in os.environ:
+    events = []
+else:
+    events = None
+
+
+def clear_log_entries():
+    global events
+    if events is not None:
+        events = []
+
+
+def get_log_entries():
+    return events
+
+
 def log(source, fields):
-    #r_index = service.indexes["r"]
-    #args = {
-    #    'index': r_index.name,
-    #    'source': source,
-    #    'sourcetype': 'r'
-    #}
     body = 'module=\"%s\"' % source
     for k in fields:
         v = fields[k]
@@ -43,9 +53,6 @@ def log(source, fields):
         else:
             body += ' %s=\"%s\" ' % (k, v)
 
+    if events is not None:
+        events.append(body)
     logger.info(body)
-
-    #r_index.service.post(
-    #    '/services/receivers/simple',
-    #    body=body,
-    #    **args)
