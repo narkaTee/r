@@ -17,14 +17,7 @@ from splunklib import binding as splunk_binding
 
 
 def log(fields):
-    try:
-        index_logging.log(__file__, fields)
-    except splunk_binding.HTTPError as http_error:
-        if http_error.status == 403:
-            raise Exception(
-                'Maybe you don\'t have the \'edit_tcp\' permissions. %s' % http_error)
-        else:
-            raise
+    index_logging.log(__file__, fields)
 
 
 def r(service, events, command_argument, fieldnames=None):
