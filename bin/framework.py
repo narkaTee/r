@@ -12,6 +12,9 @@ class RError(errors.Error):
 
 
 def verify_r_path(r_path, raise_error):
+    if r_path is None or r_path == '':
+        raise_error('R path not set')
+        return False
     if not os.path.exists(r_path):
         raise_error('Cannot find R at path \'%s\'' % r_path)
         return False
