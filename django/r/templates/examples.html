@@ -57,7 +57,8 @@
 {% block js %}
     <script type="text/javascript">
         var deps = [
-            "splunkjs/ready!"
+            "splunkjs/ready!",
+            "splunkjs/mvc/tableview"
         ];
         require(deps, function(mvc) {
             {% for s in samples %}
