@@ -20,9 +20,9 @@ import packages as packagelib
 app_id = "r"
 
 
-@render_to(app_id + ':examples.html')
 @login_required
 @config_required
+@render_to(app_id + ':examples.html')
 def examples(request):
     return {
         "request": request,
@@ -61,8 +61,8 @@ def examples(request):
     }
 
 
-@render_to(app_id + ':setup.html')
 @login_required
+@render_to(app_id + ':setup.html')
 def setup(request):
     return create_setup_view_context(
         request,
@@ -71,9 +71,9 @@ def setup(request):
     )
 
 
-@render_to(app_id + ':scripts.html')
 @login_required
 @config_required
+@render_to(app_id + ':scripts.html')
 def scripts(request):
 
     upload_new_script_action = 'upload_new_script'
