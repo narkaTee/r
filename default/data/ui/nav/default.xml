@@ -6,4 +6,5 @@
     <a name="scripts" href="/dj/redirector/r/scripts">Scripts</a>
     <a name="packages" href="/dj/redirector/r/packages">Packages</a>
     <view name="search" />
+    <a name="setup" href="/dj/redirector/r/setup">Setup</a>
 </nav>
