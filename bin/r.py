@@ -13,7 +13,6 @@ import re
 import shutil
 import uuid
 import index_logging
-from splunklib import binding as splunk_binding
 
 
 def log(fields):
