@@ -40,3 +40,7 @@ export = system
 [commands/r]
 access = read : [ * ], write : [ admin, power ]
 export = system
+
+[r/paths]
+access = read : [ * ], write : [ admin, power ]
+export = system
