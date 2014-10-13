@@ -86,6 +86,9 @@ def r(service, events, command_argument, fieldnames=None):
         else:
             script_content = command_argument
             script += script_content + '\n'
+        script += 'output  <- data.frame(lapply(output, function(x) { ' \
+                  'if(class(x)=="numeric" | class(x)=="integer") x else as.character(x) ' \
+                  '}), stringsAsFactors=FALSE)\n'
         script += 'write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n'
         script += 'write.csv(library.usage, file = "' + output_library_usage_csv_filename.replace('\\', '\\\\') + '")\n'
 

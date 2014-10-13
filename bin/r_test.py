@@ -67,3 +67,10 @@ class RTestCase(PathTestCase):
         self.assertEqual(len(indexed_events), 3)
         self.assertTrue('action=\"package_usage\"' in indexed_events[1])
         self.assertTrue('package_name=\"race\"' in indexed_events[1])
+
+    def test_r_multi_value_output(self):
+        service = Service([])
+        _, rows = r(service, None, 'output = data.frame(Result=list(1, 2, 5))')
+        #self.assertTrue(False,str(rows))
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['Result'], [1,2,5])
