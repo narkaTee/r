@@ -70,7 +70,10 @@ class RTestCase(PathTestCase):
 
     def test_r_multi_value_output(self):
         service = Service([])
-        _, rows = r(service, None, 'output = data.frame(Result=list(1, 2, 5))')
-        #self.assertTrue(False,str(rows))
-        self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0]['Result'], [1,2,5])
+        _, rows = r(service, None, ''
+                                   'output <- data.frame(col=1:2)\n'
+                                   'output$newcol[[1]] <- list(1,2,3)\n'
+                                   'output$newcol[[2]] <- list(4,5,6)\n'
+                                   '')
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]['newcol'], [1, 2, 5])
