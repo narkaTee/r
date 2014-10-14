@@ -68,6 +68,14 @@ class RTestCase(PathTestCase):
         self.assertTrue('action=\"package_usage\"' in indexed_events[1])
         self.assertTrue('package_name=\"race\"' in indexed_events[1])
 
+    def test_r_single_value_output(self):
+        service = Service([])
+        _, rows = r(service, None, ''
+                                   'output <- data.frame(col=1:2)\n'
+                                   '')
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]['col'], '1')
+
     def test_r_multi_value_output(self):
         service = Service([])
         _, rows = r(service, None, ''
@@ -76,4 +84,4 @@ class RTestCase(PathTestCase):
                                    'output$newcol[[2]] <- list(4,5,6)\n'
                                    '')
         self.assertEqual(len(rows), 2)
-        self.assertEqual(rows[0]['newcol'], [1, 2, 5])
+        self.assertEqual(rows[0]['newcol'], ['1', '2', '3'])

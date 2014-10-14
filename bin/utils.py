@@ -1,4 +1,5 @@
 from xml.etree import ElementTree
+import sys
 from splunklib.searchcommands import csv as splunkcsv
 del splunkcsv
 import csv
@@ -85,3 +86,46 @@ def read_fieldnames_from_command_input(input_buf, has_command_header=True):
         fieldnames = line
         break
     return fieldnames
+
+
+def output_info(streaming, generating, retevs, reqsop, preop, timeorder=False, clear_req_fields=False, req_fields=None):
+    import splunk.Intersplunk
+
+    infodict = {
+        'streaming_preop': preop,
+        'streaming': '0',
+        'generating': '0',
+        'retainsevents': '0',
+        'requires_preop': '0',
+        'generates_timeorder': '0',
+        'overrides_timeorder': '1',
+        'clear_required_fields': '0'
+    }
+
+    if streaming:
+        infodict['streaming'] = '1'
+
+    if generating:
+        infodict['generating'] = '1'
+        if timeorder:
+            infodict['generates_timeorder'] = '1'
+    else:
+        if timeorder:
+            infodict['overrides_timeorder'] = '0'
+
+    if retevs:
+        infodict['retainsevents'] = '1'
+
+    if reqsop:
+        infodict['requires_preop'] = '1'
+
+    if clear_req_fields:
+        infodict['clear_required_fields'] = '1'
+
+    if req_fields is not None and len(req_fields) > 0:
+        infodict['required_fields'] = req_fields
+
+    infodict['supports_multivalues'] = '1'
+
+    splunk.Intersplunk.outputResults([infodict], mvdelim=',')
+    sys.exit()

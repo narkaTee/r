@@ -119,6 +119,14 @@ def r(service, events, command_argument, fieldnames=None):
                             'package_name': package_name,
                             })
 
+        class MultiValueDialect(csv.Dialect):
+            strict = True
+            skipinitialspace = True
+            quoting = csv.QUOTE_ALL
+            delimiter = ','
+            quotechar = '"'
+            lineterminator = '\n'
+
         #read csv output
         with open(output_csv_filename, "r") as f:
             reader = csv.reader(f)
@@ -130,8 +138,17 @@ def r(service, events, command_argument, fieldnames=None):
             for row in rows[1:]:
                 event = {}
                 for i, cell in enumerate(row):
+                    if isinstance(cell, str):
+                        if cell.startswith('list(') and cell.endswith(')'):
+                            cell = cell[5:-1]
+                            cell_stream = StringIO(cell)
+                            cell_reader = csv.reader(cell_stream, MultiValueDialect())
+                            for value in cell_reader:
+                                cell = value
+                                break
                     event[header_row[i]] = cell
                 output.append(event)
+        #raise Exception(str(output))
 
         log({
             'r_id': r_id,
@@ -169,14 +186,14 @@ def main():
 
     import splunk.Intersplunk
 
-    from utils import get_service, read_fieldnames_from_command_input
+    from utils import get_service, read_fieldnames_from_command_input, output_info
 
     try:
         # check execution mode: it could be 'getinfo' to get some information about
         # how to execute the actual command
         (isgetinfo, sys.argv) = splunk.Intersplunk.isGetInfo(sys.argv)
         if isgetinfo:
-            splunk.Intersplunk.outputInfo(
+            output_info(
                 streaming=False,  # because it only runs on a search head
                 generating=False,
                 retevs=False,
