@@ -109,19 +109,25 @@
                                 <h3>Upload New Script</h3>
                             </div>
                             <div class="panel-body">
-                                <p>
-                                    <input type="file" name="{{new_script_field_name}}">
-                                    <button class="btn" name="{{upload_new_script_action}}">Upload</button>
-                                </p>
-                                {% if add_error %}
-                                    <p class="error">
-                                        {{ add_error }}
+                                {% if can_upload %}
+                                    <p>
+                                        <input type="file" name="{{new_script_field_name}}">
+                                        <button class="btn" name="{{upload_new_script_action}}">Upload</button>
                                     </p>
-                                {% endif %}
-                                {% if add_fatal_error %}
-                                    <p class="error">
-                                        FATAL ERROR:
-                                        {{ add_fatal_error }}
+                                    {% if add_error %}
+                                        <p class="error">
+                                            {{ add_error }}
+                                        </p>
+                                    {% endif %}
+                                    {% if add_fatal_error %}
+                                        <p class="error">
+                                            FATAL ERROR:
+                                            {{ add_fatal_error }}
+                                        </p>
+                                    {% endif %}
+                                {% else %}
+                                    <p>
+                                        You don't have the permission to add scripts.
                                     </p>
                                 {% endif %}
                             </div>

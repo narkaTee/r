@@ -120,6 +120,7 @@ def scripts(request):
         'scripts': r_scripts,
         'app_label': request.service.apps[app_id].label,
         'request': request,
+        'can_upload': scriptlib.can_upload(request.service),
         'new_script_field_name': new_script_field_name,
         'upload_new_script_action': upload_new_script_action,
         'delete_script_action_prefix': delete_script_action_prefix,

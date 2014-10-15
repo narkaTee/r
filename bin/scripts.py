@@ -4,6 +4,7 @@ import os
 import base64
 import config
 import lockfile
+from splunklib.binding import HTTPError
 
 scheme = 'script'
 extension = 'r'
@@ -59,6 +60,14 @@ def create_files(service):
                 if not filename in filenames:
                     script_path = os.path.join(custom_scripts_path, filename)
                     os.remove(script_path)
+
+
+def can_upload(service):
+    config_file = config.get_r_config_file(service)
+    try:
+        return config_file.itemmeta()['access']['can_write'] == '1'
+    except HTTPError:
+        return False
 
 
 def iter_stanzas(service):
