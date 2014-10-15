@@ -2,7 +2,7 @@
 _r_path = None
 _r_config_file = None
 
-ignore_cache = False
+ignore_cache = True
 
 
 def get_r_config_file(service):
