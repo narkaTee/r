@@ -132,7 +132,6 @@ def scripts(request):
 @config_required
 @render_to(app_id + ':packages.html')
 def packages(request):
-
     add_package_action = 'add_package'
     add_package_field_name = 'add_package_name'
     delete_package_action_prefix = 'delete_package_'
@@ -170,6 +169,7 @@ def packages(request):
         'packages': r_packages,
         'app_label': request.service.apps[app_id].label,
         'request': request,
+        'can_add': packagelib.can_add(request.service),
         'add_package_field_name': add_package_field_name,
         'add_package_action': add_package_action,
         'delete_package_action_prefix': delete_package_action_prefix,

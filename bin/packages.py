@@ -9,6 +9,7 @@ import shutil
 import re
 from controlfile import ControlFile
 import lockfile
+from splunklib.binding import HTTPError
 
 scheme = 'package'
 
@@ -383,6 +384,14 @@ def update_library(service):
 
 def iter_stanzas(service):
     return config.iter_stanzas(service, scheme)
+
+
+def can_add(service):
+    config_file = config.get_r_config_file(service)
+    try:
+        return config_file.itemmeta()['access']['can_write'] == '1'
+    except HTTPError:
+        return False
 
 
 def add(service, name):

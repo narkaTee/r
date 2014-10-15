@@ -134,39 +134,45 @@
                                 <h3>Add Package</h3>
                             </div>
                             <div class="panel-body">
-                                <p>
-                                    To add a package to the above list, you have to enter the package
-                                    name here. The package is not actually installed on the moment of adding
-                                    to the list, but it's installed before a R script is executed.
-                                </p>
-                                <p>
-                                    Maybe have a look at the list of
-                                    <a href="http://cran.r-project.org/web/packages/available_packages_by_name.html"
-                                            target="_blank">
-                                        available packages
-                                    </a> in the CRAN database.
-                                </p>
-                                <p>
-                                    <label for="{{add_package_field_name}}"
-                                           style="display: inline-block; margin-right: 1em;">
-                                        Package Name:
-                                    </label>
-                                    <input type="text" style="margin-bottom: 0;"
-                                           name="{{add_package_field_name}}" id="{{add_package_field_name}}">
-                                    <button class="btn" name="{{add_package_action}}"
-                                            style="margin-left: 1em; margin-bottom: 0;">
-                                        Add Package
-                                    </button>
-                                </p>
-                                {% if add_error %}
-                                    <p class="error">
-                                        {{ add_error }}
+                                {% if can_add %}
+                                    <p>
+                                        To add a package to the above list, you have to enter the package
+                                        name here. The package is not actually installed on the moment of adding
+                                        to the list, but it's installed before a R script is executed.
                                     </p>
-                                {% endif %}
-                                {% if add_fatal_error %}
-                                    <p class="error">
-                                        FATAL ERROR:
-                                        {{ add_fatal_error }}
+                                    <p>
+                                        Maybe have a look at the list of
+                                        <a href="http://cran.r-project.org/web/packages/available_packages_by_name.html"
+                                                target="_blank">
+                                            available packages
+                                        </a> in the CRAN database.
+                                    </p>
+                                    <p>
+                                        <label for="{{add_package_field_name}}"
+                                               style="display: inline-block; margin-right: 1em;">
+                                            Package Name:
+                                        </label>
+                                        <input type="text" style="margin-bottom: 0;"
+                                               name="{{add_package_field_name}}" id="{{add_package_field_name}}">
+                                        <button class="btn" name="{{add_package_action}}"
+                                                style="margin-left: 1em; margin-bottom: 0;">
+                                            Add Package
+                                        </button>
+                                    </p>
+                                    {% if add_error %}
+                                        <p class="error">
+                                            {{ add_error }}
+                                        </p>
+                                    {% endif %}
+                                    {% if add_fatal_error %}
+                                        <p class="error">
+                                            FATAL ERROR:
+                                            {{ add_fatal_error }}
+                                        </p>
+                                    {% endif %}
+                                {% else %}
+                                    <p>
+                                        You don't have the permission to add packages.
                                     </p>
                                 {% endif %}
                             </div>
