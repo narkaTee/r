@@ -34,16 +34,6 @@ Features
 - Show R error messages on the Splunk UI
 - Provide usage statitics of the app itself
 
-Status
----
-This project is in a non-final status and should not be used in a
-production environment.
-
-Users of this app (or the *r* search command) need to inherit the *user* role and
-in addition need to have the *admin_all_objects* Splunk permissions.
-
-Future version may remove this requirement.
-
 Installation
 ---
 This app is available on the [Splunk App Store](http://apps.splunk.com/app/1735/).
