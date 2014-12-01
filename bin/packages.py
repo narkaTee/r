@@ -217,7 +217,7 @@ def get_package_name_from_archive_file(archive_filename, archive_file):
                     return package_name
     if ext == '.zip':
         import zipfile
-        with zipfile.ZipFile(archive_file,'r') as z:
+        with zipfile.ZipFile(archive_file, 'r') as z:
             for memberInfo in z.infolist():
                 if memberInfo.filename.endswith('DESCRIPTION'):
                     with z.open(memberInfo.filename) as description_file:
@@ -365,7 +365,7 @@ def dependent_package_names(name):
     description_path = os.path.join(library_package_path, 'DESCRIPTION')
     dependencies = get_package_dependencies(name, description_path)
     for dependent_package_name in dependencies:
-        if not dependent_package_name in yielded_names:
+        if dependent_package_name not in yielded_names:
             yielded_names.add(dependent_package_name)
             for package_name in dependent_package_names(dependent_package_name):
                 yielded_names.add(package_name)
@@ -399,14 +399,14 @@ def update_library(service):
         # remove packages that are no longer in the list of required packages
         packages_path = get_packages_path()
         for filename in os.listdir(packages_path):
-            if not filename in archive_filenames:
+            if filename not in archive_filenames:
                 script_path = os.path.join(packages_path, filename)
                 os.remove(script_path)
 
         # uninstall packages that are no longer in the list of required packages
         library_path = get_library_path()
         for package_name in os.listdir(library_path):
-            if not package_name in package_names:
+            if package_name not in package_names:
                 if not package_name.startswith('.'):
                     package_path = os.path.join(library_path, package_name)
                     shutil.rmtree(package_path)
@@ -414,7 +414,7 @@ def update_library(service):
         # delete packages metadata that are no longer in the list of required packages
         packages_metadata_path = get_packages_metadata_path()
         for filename in os.listdir(packages_metadata_path):
-            if not filename in package_metadata_filenames:
+            if filename not in package_metadata_filenames:
                 if not filename.startswith('.'):
                     package_metadata_path = os.path.join(packages_metadata_path, filename)
                     os.remove(package_metadata_path)
