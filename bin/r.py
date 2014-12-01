@@ -23,12 +23,12 @@ def r(service, events, command_argument, fieldnames=None):
     if not events:
         events = []
 
-    #collect field names
+    # collect field names
     if fieldnames is None:
         fieldnames = set()
         for result in events:
             for key in list(result.keys()):
-                if not key in fieldnames:
+                if key not in fieldnames:
                     fieldnames.add(key)
         if len(fieldnames) == 0:
             fieldnames = None
@@ -44,7 +44,7 @@ def r(service, events, command_argument, fieldnames=None):
         'input_fieldnames': ', '.join(fieldnames) if fieldnames else '',
         })
 
-    #installing prerequirements
+    # installing prerequirements
     scripts.create_files(service)
     packages.update_library(service)
 
@@ -52,20 +52,20 @@ def r(service, events, command_argument, fieldnames=None):
     output_csv_filename = None
     output_library_usage_csv_filename = None
     try:
-        #create CSV input file
+        # create CSV input file
         if fieldnames:
             with tempfile.NamedTemporaryFile(delete=False) as f:
                 input_csv_filename = f.name
                 writer = csv.DictWriter(f, fieldnames=list(fieldnames))
                 writer.writeheader()
                 writer.writerows(events)
-        #create CSV output files
+        # create CSV output files
         with tempfile.NamedTemporaryFile(delete=False) as f:
             output_csv_filename = f.name
         with tempfile.NamedTemporaryFile(delete=False) as f:
             output_library_usage_csv_filename = f.name
 
-        #create script file
+        # create script file
         script = 'library.usage = data.frame(name=c()) \n'
         script += 'original_library = library \n'
         script += 'new_library <- function(pkg, help, pos = 2, lib.loc = NULL, character.only = FALSE, '
@@ -96,7 +96,7 @@ def r(service, events, command_argument, fieldnames=None):
             scripts.get_custom_scripts_path(),
         )
 
-        #read library usage
+        # read library usage
         with open(output_library_usage_csv_filename, "r") as f:
             reader = csv.reader(f)
             rows = [row for row in reader]
@@ -108,7 +108,7 @@ def r(service, events, command_argument, fieldnames=None):
                     for i, cell in enumerate(row):
                         event[header_row[i]] = cell
                     package_name = event['name']
-                    if not package_name in package_names:
+                    if package_name not in package_names:
                         package_names.add(package_name)
                         log({
                             'r_id': r_id,
@@ -116,7 +116,7 @@ def r(service, events, command_argument, fieldnames=None):
                             'package_name': package_name,
                             })
 
-        #read csv output
+        # read csv output
         with open(output_csv_filename, "r") as f:
             reader = csv.reader(f)
             rows = [row for row in reader]
@@ -149,7 +149,7 @@ def r(service, events, command_argument, fieldnames=None):
             })
         raise
 
-    #delete temp files
+    # delete temp files
     finally:
         if input_csv_filename:
             os.remove(input_csv_filename)
@@ -184,8 +184,8 @@ def main():
                 req_fields=None
             )
 
-        #read command arguments
-        #keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
+        # read command arguments
+        # keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
         if len(sys.argv) < 2:
             raise Exception("Missing actual R script parameter")
         command_argument = sys.argv[1]
@@ -199,7 +199,7 @@ def main():
         settings = {}
         input_events = splunk.Intersplunk.readResults(input_data, settings)
 
-        #connect to splunk using SDK
+        # connect to splunk using SDK
         service = get_service(settings['infoPath'])
 
         header, rows = r(service,
