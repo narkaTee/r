@@ -2,6 +2,7 @@ from test_service import Service, Stanza
 from path_test import PathTestCase
 import os
 import packages
+from unittest import TestCase
 
 
 class PackagesTestCase(PathTestCase):
@@ -37,3 +38,13 @@ class PackagesTestCase(PathTestCase):
         self.assertEqual(packages.get_package_state('boot'), packages.metadata_package_not_installed)
         self.assertEqual(packages.get_package_state('timeDate'), packages.metadata_package_installed)
         self.assertEqual(packages.get_package_state('forecast'), packages.metadata_package_installed)
+
+
+class PackageArchiveTests(TestCase):
+    def test_extract_package_name(self):
+        sample_package_archives_dir = os.path.join(os.path.dirname(__file__), 'sample_package_archives')
+        for archive_file_name in os.listdir(sample_package_archives_dir):
+            if not archive_file_name.startswith('.'):
+                with open(os.path.join(sample_package_archives_dir, archive_file_name)) as f:
+                    name = packages.get_package_name_from_archive_file(archive_file_name, f)
+                    self.assertTrue(archive_file_name.startswith(name),'Extracted %s from %s' % (name, archive_file_name))

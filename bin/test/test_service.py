@@ -6,29 +6,6 @@ class Service(object):
         if not stanzas:
             stanzas = []
         self.confs = Confs(stanzas)
-        #self.indexes = {
-        #    'r': Index('r')
-        #}
-
-
-#class Index(object):
-#
-#    def __init__(self, name):
-#        self.name = name
-#        self.service = IndexService()
-
-
-#class IndexService(object):
-#
-#    def __init__(self):
-#        #self.posts = []
-#        pass
-#
-#    def post(self, path_segment="", **query):
-#        self.posts.append({
-#            'path_segment': path_segment,
-#            'query': query
-#        })
 
 
 class Confs(object):
@@ -43,6 +20,9 @@ class Confs(object):
         if not self.r_file:
             self.r_file = File(self.stanzas)
         return self.r_file
+
+    def __getitem__(self, item):
+        return self.create(item)
 
 
 class File(object):
