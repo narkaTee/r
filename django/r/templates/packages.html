@@ -159,6 +159,14 @@
                                             Add Package
                                         </button>
                                     </p>
+                                    <p>
+                                        <label for="{{upload_package_field_name}}"
+                                               style="display: inline-block; margin-right: 1em;">
+                                            Package File:
+                                        </label>
+                                        <input type="file" name="{{upload_package_field_name}}" id="{{upload_package_field_name}}">
+                                        <button class="btn" name="{{upload_package_action}}">Upload Package</button>
+                                    </p>
                                     {% if add_error %}
                                         <p class="error">
                                             {{ add_error }}

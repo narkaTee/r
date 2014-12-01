@@ -8,7 +8,7 @@ from splunkdj.setup import create_setup_view_context
 import os
 import sys
 import errors
-import json
+import shutil
 
 # allow imports from bin directory
 bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bin')
@@ -103,7 +103,7 @@ def scripts(request):
         except errors.Error as e:
             return HttpResponseRedirect('./?add_error=%s' % str(e))
         except Exception as e:
-            return HttpResponseRedirect('./?add_unknown_error=%s' % str(e))
+            return HttpResponseRedirect('./?add_fatal_error=%s' % str(e))
         return HttpResponseRedirect('./')
 
     #scan for R script stanzas
@@ -125,7 +125,7 @@ def scripts(request):
         'upload_new_script_action': upload_new_script_action,
         'delete_script_action_prefix': delete_script_action_prefix,
         'add_error': request.GET.get('add_error', ''),
-        'add_unknown_error': request.GET.get('add_unknown_error', ''),
+        'add_fatal_error': request.GET.get('add_fatal_error', ''),
     }
 
 
@@ -136,15 +136,31 @@ def packages(request):
     add_package_action = 'add_package'
     add_package_field_name = 'add_package_name'
     delete_package_action_prefix = 'delete_package_'
+    upload_package_action = 'upload_package'
+    upload_package_field_name = 'package_file'
 
     if request.method == 'POST':
         try:
-            #add package stanza
+            # raise errors.Error(packagelib.get_packages_path())
+            # add package stanza
             if add_package_action in request.POST:
                 package_name = request.POST[add_package_field_name]
                 packagelib.get_package_description_lines(package_name)
                 packagelib.add(request.service, package_name)
-            #delete package stanza
+            # upload package and add package stanza
+            elif upload_package_action in request.POST:
+                if upload_package_field_name in request.FILES:
+                    archive_file = request.FILES[upload_package_field_name]
+                    package_name = packagelib.get_package_name_from_archive_file(archive_file.name, archive_file)
+                    target_archive_path = os.path.join(packagelib.get_packages_path(), packagelib.get_local_package_filename(package_name))
+                    archive_file.seek(0)
+                    data = archive_file.read()
+                    with open(target_archive_path, 'w') as f:
+                        f.write(data)
+                    packagelib.add(request.service, package_name)
+                else:
+                    raise errors.Error('File missing')
+            # delete package stanza
             else:
                 for key in request.POST:
                     if key.startswith(delete_package_action_prefix):
@@ -153,10 +169,10 @@ def packages(request):
         except errors.Error as e:
             return HttpResponseRedirect('./?add_error=%s' % str(e))
         except Exception as e:
-            return HttpResponseRedirect('./?add_unknown_error=%s' % str(e))
+            return HttpResponseRedirect('./?add_fatal_error=%s' % str(e))
         return HttpResponseRedirect('./')
 
-    #scan for package stanzas
+    # scan for package stanzas
     r_packages = []
     for stanza, package_name in packagelib.iter_stanzas(request.service):
         r_packages.append({
@@ -175,8 +191,10 @@ def packages(request):
         'add_package_action': add_package_action,
         'delete_package_action_prefix': delete_package_action_prefix,
         'add_error': request.GET.get('add_error', ''),
-        'add_unknown_error': request.GET.get('add_unknown_error', ''),
-        'not_installed': packagelib.metadata_package_not_installed
+        'add_fatal_error': request.GET.get('add_fatal_error', ''),
+        'not_installed': packagelib.metadata_package_not_installed,
+        'upload_package_action': upload_package_action,
+        "upload_package_field_name": upload_package_field_name
     }
 
 
