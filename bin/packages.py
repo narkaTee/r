@@ -188,6 +188,44 @@ skip_package_names.add('utils')
 pkg_name_regex = re.compile(r'\s*([\w\.]+)\s*(?:\(.*\))?\s*')
 
 
+def get_package_name(description_file):
+    control_file = ControlFile(fileobj=description_file)
+    if 'Package' in control_file.para:
+        depends_value = control_file.para['Package']
+        return depends_value
+    return None
+
+
+supported_tar_extensions = set()
+supported_tar_extensions.add('.tgz')
+supported_tar_extensions.add('.tar')
+supported_tar_extensions.add('.gz')
+supported_tar_extensions.add('.gztar')
+supported_tar_extensions.add('.bztar')
+
+
+def get_package_name_from_archive_file(archive_filename, archive_file):
+    from os.path import splitext
+    root, ext = splitext(archive_filename)
+    if ext in supported_tar_extensions:
+        import tarfile
+        with tarfile.open(fileobj=archive_file, mode='r') as tar:
+            for tarinfo in tar:
+                if tarinfo.name.endswith('DESCRIPTION'):
+                    description_file = tar.extractfile(tarinfo)
+                    package_name = get_package_name(description_file)
+                    return package_name
+    if ext == '.zip':
+        import zipfile
+        with zipfile.ZipFile(archive_file,'r') as z:
+            for memberInfo in z.infolist():
+                if memberInfo.filename.endswith('DESCRIPTION'):
+                    with z.open(memberInfo.filename) as description_file:
+                        package_name = get_package_name(description_file)
+                        return package_name
+    raise errors.Error('Unsupported archive: %s' % archive_filename)
+
+
 def get_package_dependencies(package_name, description_path):
     with open(description_path, 'r') as f:
         control_file = ControlFile(fileobj=f)
@@ -204,7 +242,7 @@ def get_package_dependencies(package_name, description_path):
                             'Invalid \'Depends\' component: %s' % depends_component
                         )
                     dependend_package_name = match.group(1)
-                    if not dependend_package_name in skip_package_names:
+                    if dependend_package_name not in skip_package_names:
                         dependencies.append(dependend_package_name)
         return dependencies
 
