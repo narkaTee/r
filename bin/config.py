@@ -10,7 +10,7 @@ def get_r_config_file(service):
         global _r_config_file
         if _r_config_file:
             return _r_config_file
-    _r_config_file = service.confs['r']#.create('r')
+    _r_config_file = service.confs['r']  # .create('r')
     return _r_config_file
 
 
