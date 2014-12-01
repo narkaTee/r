@@ -78,7 +78,7 @@ def r(service, events, command_argument, fieldnames=None):
         script += '}\n'
         script += 'library = new_library\n'
         if input_csv_filename:
-            script += 'input <- read.csv("' + input_csv_filename.replace('\\', '\\\\') + '")\n'
+            script += 'input <- read.csv( "' + input_csv_filename.replace('\\', '\\\\') + '", check.names=FALSE)\n'
         command_argument_regex = re.match(r'^(\w+\.[rR])$', command_argument)
         if command_argument_regex:
             script_name = command_argument_regex.group(1)
