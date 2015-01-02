@@ -13,6 +13,7 @@ import re
 import shutil
 import uuid
 import index_logging
+import config
 
 
 def log(fields):
@@ -77,8 +78,19 @@ def r(service, events, command_argument, fieldnames=None):
         script += '    warn.conflicts, quietly , verbose))\n'
         script += '}\n'
         script += 'library = new_library\n'
+
+        # read content of csv file into input variable
         if input_csv_filename:
-            script += 'input <- read.csv( "' + input_csv_filename.replace('\\', '\\\\') + '", check.names=FALSE)\n'
+            options = config.get_r_csv_read_options(service)
+            if options:
+                options = options.strip()
+            if options and len(options) > 0:
+                options_with_comma = ', '+options
+            else:
+                options_with_comma = ''
+            script += 'input <- read.csv( "' + input_csv_filename.replace('\\', '\\\\') + '" ' \
+                      + options_with_comma + ')\n'
+
         command_argument_regex = re.match(r'^(\w+\.[rR])$', command_argument)
         if command_argument_regex:
             script_name = command_argument_regex.group(1)
@@ -86,7 +98,18 @@ def r(service, events, command_argument, fieldnames=None):
         else:
             script_content = command_argument
             script += script_content + '\n'
-        script += 'write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n'
+
+        # write content of output variable to csv file
+        options = config.get_r_csv_write_options(service)
+        if options:
+            options = options.strip()
+        if options and len(options) > 0:
+            options_with_comma = ', '+options
+        else:
+            options_with_comma = ''
+        script += 'write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '" '\
+                  + options_with_comma + ')\n'
+
         script += 'write.csv(library.usage, file = "' + output_library_usage_csv_filename.replace('\\', '\\\\') + '")\n'
 
         framework.exeute(
