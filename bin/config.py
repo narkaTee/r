@@ -1,24 +1,10 @@
 
-_r_path = None
-_r_config_file = None
-
-ignore_cache = True
-
-
 def get_r_config_file(service):
-    if not ignore_cache:
-        global _r_config_file
-        if _r_config_file:
-            return _r_config_file
     _r_config_file = service.confs['r']  # .create('r')
     return _r_config_file
 
 
 def get_r_path(service):
-    if not ignore_cache:
-        global _r_path
-        if _r_path:
-            return _r_path
     r_config_file = get_r_config_file(service)
     for stanza in r_config_file.list():
         if stanza.name == 'paths':
