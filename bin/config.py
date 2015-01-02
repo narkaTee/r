@@ -13,6 +13,22 @@ def get_r_path(service):
     raise Exception('missing r path argument')
 
 
+def get_r_csv_read_options(service):
+    r_config_file = get_r_config_file(service)
+    for stanza in r_config_file.list():
+        if stanza.name == 'csv':
+            return getattr(stanza, 'read-options')
+    raise Exception('missing csv read-options')
+
+
+def get_r_csv_write_options(service):
+    r_config_file = get_r_config_file(service)
+    for stanza in r_config_file.list():
+        if stanza.name == 'csv':
+            return getattr(stanza, 'write-options')
+    raise Exception('missing csv write-options')
+
+
 def iter_stanzas(service, scheme):
     prefix = '%s://' % scheme
     r_config_file = get_r_config_file(service)

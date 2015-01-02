@@ -58,6 +58,12 @@
             For Windows, it should be something like <code>C:\Program Files\R\R-3.0.3\bin\R.exe</code>.
             For Mac OS X and Linux or Unix, it's probably <code>/usr/bin/R</code>.
         </p>
+        <p>
+            The app works as follows. When you run the <code>r</code> command, the data from your Splunk pipeline is
+            saved as a CSV file, and loaded into R using read.csv. Your custom script is then executed on the
+            <code>input</code> variable, the <code>output</code> variable is saved using write.csv, and this final CSV
+            is loaded back into Splunk.
+        </p>
         {% csrf_token %}
         {{ form.as_p }}
         <p>

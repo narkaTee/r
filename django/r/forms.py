@@ -17,7 +17,8 @@ class RPathValidator(object):
     def __call__(self, value):
         def raise_error(msg):
             raise validators.ValidationError(msg)
-        frameworklib.verify_r_path(value,raise_error)
+
+        frameworklib.verify_r_path(value, raise_error)
 
 
 class RPathField(forms.CharField):
@@ -32,7 +33,24 @@ class SetupForm(forms.Form):
         entity='paths',
         field='r',
         label='Please specify the library installation path:',
-        #widget=forms.TextInput(attrs={
-        #    'style': 'width: 90%;'
-        #})
+    )
+    csv_read_options = forms.CharField(
+        endpoint='configs/conf-r',
+        entity='csv',
+        field='read-options',
+        label='Please indicate the options for read.csv:',
+        help_text='For the full list of options, please see the '
+                  '<a target="_blank" href="http://cran.r-project.org/doc/manuals/r-release/fullrefman.pdf">'
+                  'R reference manual</a> under read.csv and write.csv.',
+        required=False,
+    )
+    csv_write_options = forms.CharField(
+        endpoint='configs/conf-r',
+        entity='csv',
+        field='write-options',
+        label='Please indicate the options for write.csv:',
+        help_text='For the full list of options, please see the '
+                  '<a target="_blank" href="http://cran.r-project.org/doc/manuals/r-release/fullrefman.pdf">'
+                  'R reference manual</a> under read.csv and write.csv.',
+        required=False,
     )
