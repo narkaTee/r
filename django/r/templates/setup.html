@@ -53,7 +53,7 @@
                 Download for Linux/Unix
             </a>
         </p>
-        <p>
+        <p id="installation_path_description">
             After installing, please check the installation path.
             For Windows, it should be something like <code>C:\Program Files\R\R-3.0.3\bin\R.exe</code>.
             For Mac OS X and Linux or Unix, it's probably <code>/usr/bin/R</code>.
@@ -75,3 +75,12 @@
     </form>
     <div style="height: 30px;"></div>
 {% endblock content%}
+
+{% block js %}
+    <script type="text/javascript">
+        require(['jquery'],function($)
+        {
+            $('#id_r_path').parent().insertAfter($('#installation_path_description'));
+        });
+    </script>
+{% endblock js %}
