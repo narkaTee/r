@@ -82,6 +82,19 @@
         require(['jquery'],function($)
         {
             $('#id_r_path').parent().insertAfter($('#installation_path_description'));
+            var readCSVP=$('#id_csv_read_options').parent();
+            var writeCSVP=$('#id_csv_write_options').parent();
+            var table=$('<table width="100%"><tr><td id="id_csv_read_td"></td><td id="id_csv_write_td"></td></tr></table>');
+            table.insertBefore(readCSVP);
+            var readCSVTD=$('#id_csv_read_td');
+            var writeCSVTD=$('#id_csv_write_td');
+            readCSVTD.append(readCSVP);
+            writeCSVTD.append(writeCSVP);
+            $('input',table).css('width','90%');
+            var helpText=$('.helptext',table);
+            var pAfterTable=$('<p></p>');
+            pAfterTable.insertAfter(table);
+            pAfterTable.append(helpText);
         });
     </script>
 {% endblock js %}

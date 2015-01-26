@@ -49,8 +49,8 @@ class SetupForm(forms.Form):
         entity='csv',
         field='write-options',
         label='Please indicate the options for write.csv:',
-        help_text='For the full list of options, please see the '
-                  '<a target="_blank" href="http://cran.r-project.org/doc/manuals/r-release/fullrefman.pdf">'
-                  'R reference manual</a> under read.csv and write.csv.',
+        #help_text='For the full list of options, please see the '
+        #          '<a target="_blank" href="http://cran.r-project.org/doc/manuals/r-release/fullrefman.pdf">'
+        #          'R reference manual</a> under read.csv and write.csv.',
         required=False,
     )
