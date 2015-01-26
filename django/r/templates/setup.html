@@ -95,6 +95,13 @@
             var pAfterTable=$('<p></p>');
             pAfterTable.insertAfter(table);
             pAfterTable.append(helpText);
+            $.fn.boldLastWord = function() {
+              var text = this.text().trim().split(" ");
+              var last = text.pop();
+              this.html(text.join(" ") + (text.length > 0 ? " <span style='font-weight: bold;'>" + last + "</span>" : last));
+            };
+            $('label',readCSVTD).boldLastWord();
+            $('label',writeCSVTD).boldLastWord();
         });
     </script>
 {% endblock js %}
