@@ -19,11 +19,25 @@ Usage
 The command requires one parameters which is either a actual R language
 script:
 
+![R for Splunk][http://i.imgur.com/VvXtf2j.png]
+
+
     | r "output = data.frame(Name=c('A','B','C'),Value=c(1,2,3))"
 
 ... or just the name of a R script file that is uploaded to the app:
 
     | r myscript.r
+
+... here is another example:
+
+     | r "
+     gm_mean = function(x, na.rm=TRUE){
+       exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+     }
+     data <- data.matrix(input);
+     output <- apply(data, 2, gm_mean)"
+
+Input comes in as `input` and you need you direct your results to `output` to get them back into Splunk.
 
 Features
 ---
