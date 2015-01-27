@@ -19,7 +19,7 @@ Usage
 The command requires one parameters which is either a actual R language
 script:
 
-![R for Splunk][http://i.imgur.com/VvXtf2j.png]
+![RforSplunk][http://i.imgur.com/VvXtf2j.png]
 
 
     | r "output = data.frame(Name=c('A','B','C'),Value=c(1,2,3))"
