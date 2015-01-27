@@ -82,7 +82,7 @@ def scripts(request):
 
     if request.method == 'POST':
         try:
-            #add script stanza
+            # add script stanza
             if upload_new_script_action in request.POST:
                 if new_script_field_name in request.FILES:
                     source_file = request.FILES[new_script_field_name]
@@ -93,7 +93,7 @@ def scripts(request):
                         raise errors.Error('Wrong file extension. It has to be \'r\'.')
                 else:
                     raise errors.Error('File missing')
-            #delete script stanza
+            # delete script stanza
             else:
                 for key in request.POST:
                     if key.startswith(delete_script_action_prefix):
@@ -106,7 +106,7 @@ def scripts(request):
             return HttpResponseRedirect('./?add_fatal_error=%s' % str(e))
         return HttpResponseRedirect('./')
 
-    #scan for R script stanzas
+    # scan for R script stanzas
     r_scripts = []
     for stanza, name in scriptlib.iter_stanzas(request.service):
         r_scripts.append({
