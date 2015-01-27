@@ -35,7 +35,7 @@ def verify_r_path(r_path, raise_error):
 def exeute(service, script, library_path, scripts_path):
     r_path = config.get_r_path(service)
 
-    #check if the R library is installed
+    # check if the R library is installed
     def raise_e_path_error(msg):
         raise RError(msg)
     verify_r_path(r_path, raise_e_path_error)
@@ -44,15 +44,15 @@ def exeute(service, script, library_path, scripts_path):
     error_path = None
     script_path = None
     try:
-        #create r output file
+        # create r output file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             r_output_filename = f.name
 
-        #create error file
+        # create error file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             error_path = f.name
 
-        #create script file
+        # create script file
         with tempfile.NamedTemporaryFile(delete=False) as f:
             script_path = f.name
             f.write("""
@@ -105,7 +105,7 @@ error=function(err) {
                     raise RError('%s' % err)
 
     finally:
-        #delete temp files
+        # delete temp files
         if error_path:
             os.remove(error_path)
         if r_output_filename:
@@ -125,7 +125,7 @@ class InstallPackageError(RError):
 def install_package(service, library_path, package_name, package_path):
     r_path = config.get_r_path(service)
 
-    #check if the R library is installed
+    # check if the R library is installed
     def raise_e_path_error(msg):
         raise InstallPackageError(package_name, msg)
     verify_r_path(r_path, raise_e_path_error)
