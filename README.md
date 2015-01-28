@@ -35,7 +35,8 @@ script:
        exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
      }
      data <- data.matrix(input);
-     output <- apply(data, 2, gm_mean)"
+     output <- apply(data, 2, gm_mean)
+     "
 
 Input comes in as `input` and you need you direct your results to `output` to get them back into Splunk.
 
