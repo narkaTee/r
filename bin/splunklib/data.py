@@ -17,6 +17,7 @@ format, which is the format used by most of the REST API.
 """
 
 from xml.etree.ElementTree import XML
+import sys
 
 __all__ = ["load"]
 
@@ -104,6 +105,7 @@ def load_dict(element, nametable = None):
 
 # Loads the given elements attrs & value into single merged dict.
 def load_elem(element, nametable=None):
+    #sys.stderr.write(element.tag+"\n")
     name = localname(element.tag)
     attrs = load_attrs(element)
     value = load_value(element, nametable)
@@ -116,6 +118,7 @@ def load_elem(element, nametable=None):
     # Both attrs & value are complex, so merge the two dicts, resolving collisions.
     collision_keys = []
     for key, val in attrs.iteritems():
+        sys.stderr.write(key+"\n")
         if key in value and key in collision_keys:
             value[key].append(val)
         elif key in value and key not in collision_keys:

@@ -115,6 +115,16 @@ def scripts(request):
             'is_removable': stanza.access['removable'] == '1',
             'owner': stanza.access['owner'],
         })
+    #t = scriptlib.Scripts(request.service).get()
+    #from splunklib import data
+    #data.load(t.body.read())
+    for script in scriptlib.Scripts(request.service):
+        r_scripts.append({
+            'file_name': script.content.name,
+            'name': script.name,
+            'is_removable': False,
+            'owner': script.access['owner'],
+        })
 
     return {
         'scripts': r_scripts,

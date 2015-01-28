@@ -18,3 +18,4 @@ export = system
 
 [r]
 export = system
+access = read : [ * ], write : [ admin, power ]

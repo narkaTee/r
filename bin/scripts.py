@@ -5,10 +5,20 @@ import base64
 import config
 import lockfile
 from splunklib.binding import HTTPError
+from splunklib.client import Collection, Entity
 
 scheme = 'script'
 extension = 'r'
 uploaded_stanza_key = 'uploaded'
+
+
+class Script(Entity):
+    pass
+
+
+class Scripts(Collection):
+    def __init__(self, service):
+        Collection.__init__(self, service, "r/scripts/", item=Script)
 
 
 def get_custom_scripts_path():
