@@ -81,7 +81,7 @@ def r(service, events, command_argument, fieldnames=None):
 
         # read content of csv file into input variable
         if input_csv_filename:
-            options = config.get_r_csv_read_options(service)
+            options = 'check.names=FALSE, stringsAsFactors=FALSE'
             if options:
                 options = options.strip()
             if options and len(options) > 0:
@@ -100,7 +100,7 @@ def r(service, events, command_argument, fieldnames=None):
             script += script_content + '\n'
 
         # write content of output variable to csv file
-        options = config.get_r_csv_write_options(service)
+        options = ''
         if options:
             options = options.strip()
         if options and len(options) > 0:

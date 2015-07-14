@@ -58,15 +58,14 @@
             For Windows, it should be something like <code>C:\Program Files\R\R-3.0.3\bin\R.exe</code>.
             For Mac OS X and Linux or Unix, it's probably <code>/usr/bin/R</code>.
         </p>
-        <hr>
+        {{ form.as_p }}
+        {% csrf_token %}
         <p>
             <span style="font-weight: bolder;">How the app works:</span> When you run the <code>r</code> command, the data from your Splunk pipeline is
-            saved as a CSV file, and loaded into R using read.csv. Your custom script is then executed on the
-            <code>input</code> variable, the <code>output</code> variable is saved using write.csv, and this final CSV
+            saved as a CSV file, and loaded into R. Your custom script is then executed on the
+            <code>input</code> variable, the <code>output</code> variable is saved, and this final CSV
             is loaded back into Splunk.
         </p>
-        {% csrf_token %}
-        {{ form.as_p }}
         <p>
             <input class="btn btn-primary" type="submit" value="Save" />
             {% if configured %}
@@ -76,32 +75,3 @@
     </form>
     <div style="height: 30px;"></div>
 {% endblock content%}
-
-{% block js %}
-    <script type="text/javascript">
-        require(['jquery'],function($)
-        {
-            $('#id_r_path').parent().insertAfter($('#installation_path_description'));
-            var readCSVP=$('#id_csv_read_options').parent();
-            var writeCSVP=$('#id_csv_write_options').parent();
-            var table=$('<table width="100%"><tr><td id="id_csv_read_td"></td><td id="id_csv_write_td"></td></tr></table>');
-            table.insertBefore(readCSVP);
-            var readCSVTD=$('#id_csv_read_td');
-            var writeCSVTD=$('#id_csv_write_td');
-            readCSVTD.append(readCSVP);
-            writeCSVTD.append(writeCSVP);
-            $('input',table).css('width','90%');
-            var helpText=$('.helptext',table);
-            var pAfterTable=$('<p></p>');
-            pAfterTable.insertAfter(table);
-            pAfterTable.append(helpText);
-            $.fn.boldLastWord = function() {
-              var text = this.text().trim().split(" ");
-              var last = text.pop();
-              this.html(text.join(" ") + (text.length > 0 ? " <span style='font-weight: bold;'>" + last + "</span>" : last));
-            };
-            $('label',readCSVTD).boldLastWord();
-            $('label',writeCSVTD).boldLastWord();
-        });
-    </script>
-{% endblock js %}
