@@ -1,5 +1,5 @@
 from test_service import Service
-from path_test import PathTestCase
+from test_path import PathTestCase
 import r_stats
 import packages
 import index_logging

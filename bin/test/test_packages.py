@@ -1,5 +1,5 @@
 from test_service import Service, Stanza
-from path_test import PathTestCase
+from test_path import PathTestCase
 import os
 import packages
 from unittest import TestCase

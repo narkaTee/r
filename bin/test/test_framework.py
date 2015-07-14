@@ -1,6 +1,6 @@
 import framework
 from test_service import Service, Stanza
-from path_test import PathTestCase
+from test_path import PathTestCase
 import tempfile
 import csv
 import os

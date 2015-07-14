@@ -1,12 +1,12 @@
 from test_service import Service, Stanza
-from path_test import PathTestCase
+from test_path import PathTestCase
 from r import r
 import scripts as scriptlib
 
-
 class RTestCase(PathTestCase):
     def test_r(self):
-        service = Service([])
+        service = Service([
+        ])
         input_data = [{'Name': 'Robert'}]
         _, rows = r(service, input_data, 'output = input')
         self.assertEqual(len(rows), 1)
@@ -14,7 +14,7 @@ class RTestCase(PathTestCase):
 
     def test_r_package_installation(self):
         service = Service([
-            Stanza('package://race', {}),
+            Stanza('package://race', {})
         ])
         input_data = [{'Name': 'Robert'}]
         _, rows = r(service, input_data, '''
@@ -30,7 +30,7 @@ class RTestCase(PathTestCase):
 
         service = Service([
             Stanza('package://race', {}),
-            Stanza('package://boot', {}),
+            Stanza('package://boot', {})
         ])
         _, rows = r(service, None, '''
         library(race)
@@ -51,7 +51,7 @@ class RTestCase(PathTestCase):
 
         service = Service([
             Stanza('package://race', {}),
-            Stanza('package://boot', {}),
+            Stanza('package://boot', {})
         ])
         scriptlib.add(service, 'test', """
         library(race)

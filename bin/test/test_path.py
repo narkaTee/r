@@ -1,4 +1,4 @@
-from config_test import ConfigTestCase
+from test_config import ConfigTestCase
 import path
 
 temp_tempdir_segment = None
