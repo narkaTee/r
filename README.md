@@ -38,7 +38,7 @@ script:
      output <- apply(data, 2, gm_mean)
      "
 
-Input comes in as `input` and you need you direct your results to `output` to get them back into Splunk.
+Input comes in as `input` and you need to direct your results to `output` to get them back into Splunk.
 
 Features
 ---
