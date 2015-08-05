@@ -152,7 +152,8 @@ def packages(request):
                 if upload_package_field_name in request.FILES:
                     archive_file = request.FILES[upload_package_field_name]
                     package_name = packagelib.get_package_name_from_archive_file(archive_file.name, archive_file)
-                    target_archive_path = os.path.join(packagelib.get_packages_path(), packagelib.get_local_package_filename(package_name))
+                    target_archive_path = os.path.join(packagelib.get_packages_path(),
+                                                       packagelib.get_local_package_filename(package_name))
                     archive_file.seek(0)
                     data = archive_file.read()
                     with open(target_archive_path, 'w') as f:
@@ -268,5 +269,5 @@ def script(request, name):
 
 @login_required
 @config_required
-def default(request):
+def default():
     return HttpResponseRedirect('../../../app/r/overview')
