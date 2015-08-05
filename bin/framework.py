@@ -2,13 +2,7 @@ import os
 import config
 import subprocess
 import tempfile
-import errors
-
-
-class RError(errors.Error):
-    def __init__(self, message):
-        self.message = message
-        super(RError, self).__init__(message)
+from errors import RError, InstallPackageError
 
 
 def verify_r_path(r_path, raise_error):
@@ -112,14 +106,6 @@ error=function(err) {
             os.remove(r_output_filename)
         if script_path:
             os.remove(script_path)
-
-
-class InstallPackageError(RError):
-    def __init__(self, package_name, message):
-        self.package_name = package_name
-        super(InstallPackageError, self).__init__(
-            'Unable to install package \'%s\': %s' % (package_name, message)
-        )
 
 
 def install_package(service, library_path, package_name, package_path):

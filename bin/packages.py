@@ -333,7 +333,7 @@ def install_package(service, name):
                 _update_package_state(name, metadata_package_installing)
                 try:
                     framework.install_package(service, library_path, name, archive_path)
-                except framework.InstallPackageError as install_error:
+                except errors.InstallPackageError as install_error:
                     raise PackageInstallError(name, install_error.message)
                 except Exception as e:
                     raise PackageInstallError(name, str(e))
