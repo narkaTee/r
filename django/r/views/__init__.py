@@ -1,19 +1,20 @@
 from django.contrib.auth.decorators import login_required
 from splunkdj.decorators.render import render_to, ajax_request
+
+# allow imports from bin directory
+import os
+import sys
+bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bin')
+sys.path += bin_path
+
 from ..forms import SetupForm
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseServerError
 from splunkdj.setup import config_required
 from splunkdj.setup import create_setup_view_context
-import os
-import sys
+
+# the following imports require the path to bin directory
 import errors
-import shutil
-
-# allow imports from bin directory
-bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bin')
-sys.path += bin_path
-
 import scripts as scriptlib
 import packages as packagelib
 
