@@ -8,7 +8,7 @@ from StringIO import StringIO
 import scripts
 import packages
 import framework
-import errors
+import r_errors
 import re
 import shutil
 import uuid
@@ -231,7 +231,7 @@ def main():
                          fieldnames=fieldnames)
         splunk.Intersplunk.outputResults(rows, fields=header)
 
-    except errors.Error as e:
+    except r_errors.Error as e:
         splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e)))
 
     except Exception as e:

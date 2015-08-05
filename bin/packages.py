@@ -3,7 +3,7 @@ import os
 import urllib2
 import framework
 import config
-import errors
+import r_errors
 from sys import platform as _platform
 import shutil
 import re
@@ -53,7 +53,7 @@ def lock_metadata():
     return lockfile.file_lock(lock_file_path)
 
 
-class PackageInstallError(errors.Error):
+class PackageInstallError(r_errors.Error):
     def __init__(self, name, reason):
         self.name = name
         super(PackageInstallError, self).__init__(
@@ -223,7 +223,7 @@ def get_package_name_from_archive_file(archive_filename, archive_file):
                     with z.open(memberInfo.filename) as description_file:
                         package_name = get_package_name(description_file)
                         return package_name
-    raise errors.Error('Unsupported archive: %s' % archive_filename)
+    raise r_errors.Error('Unsupported archive: %s' % archive_filename)
 
 
 def get_package_dependencies(package_name, description_path):
@@ -333,7 +333,7 @@ def install_package(service, name):
                 _update_package_state(name, metadata_package_installing)
                 try:
                     framework.install_package(service, library_path, name, archive_path)
-                except errors.InstallPackageError as install_error:
+                except r_errors.InstallPackageError as install_error:
                     raise PackageInstallError(name, install_error.message)
                 except Exception as e:
                     raise PackageInstallError(name, str(e))

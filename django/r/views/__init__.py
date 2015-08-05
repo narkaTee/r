@@ -14,7 +14,7 @@ from splunkdj.setup import config_required
 from splunkdj.setup import create_setup_view_context
 
 # the following imports require the path to bin directory
-import errors
+import r_errors
 import scripts as scriptlib
 import packages as packagelib
 
@@ -91,9 +91,9 @@ def scripts(request):
                         source_file_noext, _ = os.path.splitext(source_file.name)
                         scriptlib.add(request.service, source_file_noext, source_file.read())
                     else:
-                        raise errors.Error('Wrong file extension. It has to be \'r\'.')
+                        raise r_errors.Error('Wrong file extension. It has to be \'r\'.')
                 else:
-                    raise errors.Error('File missing')
+                    raise r_errors.Error('File missing')
             # delete script stanza
             else:
                 for key in request.POST:
@@ -101,7 +101,7 @@ def scripts(request):
                         file_name = key[len(delete_script_action_prefix):]
                         source_file_noext, _ = os.path.splitext(file_name)
                         scriptlib.remove(request.service, source_file_noext)
-        except errors.Error as e:
+        except r_errors.Error as e:
             return HttpResponseRedirect('./?add_error=%s' % str(e))
         except Exception as e:
             return HttpResponseRedirect('./?add_fatal_error=%s' % str(e))
@@ -161,14 +161,14 @@ def packages(request):
                         f.write(data)
                     packagelib.add(request.service, package_name)
                 else:
-                    raise errors.Error('File missing')
+                    raise r_errors.Error('File missing')
             # delete package stanza
             else:
                 for key in request.POST:
                     if key.startswith(delete_package_action_prefix):
                         package_name = key[len(delete_package_action_prefix):]
                         packagelib.remove(request.service, package_name)
-        except errors.Error as e:
+        except r_errors.Error as e:
             return HttpResponseRedirect('./?add_error=%s' % str(e))
         except Exception as e:
             return HttpResponseRedirect('./?add_fatal_error=%s' % str(e))

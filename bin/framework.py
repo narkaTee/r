@@ -2,7 +2,7 @@ import os
 import config
 import subprocess
 import tempfile
-from errors import RError, InstallPackageError
+from r_errors import RError, InstallPackageError
 
 
 def verify_r_path(r_path, raise_error):

@@ -1,6 +1,6 @@
 import traceback
 import sys
-import errors
+import r_errors
 import config
 import uuid
 import packages
@@ -69,7 +69,7 @@ def main():
         r_stats(service)
         splunk.Intersplunk.outputResults([])
 
-    except errors.Error as e:
+    except r_errors.Error as e:
         splunk.Intersplunk.outputResults(splunk.Intersplunk.generateErrorResults(str(e)))
 
     except Exception as e:
