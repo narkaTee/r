@@ -102,7 +102,7 @@ script:
     | 1701 | 11
     | ...  | ...
     
-    To apply FFT on this data, it needs to be detrended. This is done by calculating the difference in sunspots with the previous year. Enter streamstats. Then the fft() function is then applied to the Sunspots column, and the frequencies are converted back to cycles 
+    To apply FFT on this data, it needs to be detrended. This is done by calculating the difference in sunspots with the previous year. Enter streamstats. The fft() function is then applied to the Sunspots column, and the frequencies are converted back to cycles 
 
     ````
     | inputlookup sunspots.csv

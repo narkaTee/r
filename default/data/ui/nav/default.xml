@@ -1,7 +1,7 @@
 <!--suppress ALL -->
 <nav color="#0072C6">
     <view name="overview" default="true" />
-    <a name="examples" href="/dj/redirector/r/examples">Examples</a>
+    <view name="examples" />
     <a name="scripts" href="/dj/redirector/r/scripts">Scripts</a>
     <a name="packages" href="/dj/redirector/r/packages">Packages</a>
     <view name="search" />
