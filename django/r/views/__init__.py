@@ -270,5 +270,5 @@ def script(request, name):
 
 @login_required
 @config_required
-def default():
+def default(request):
     return HttpResponseRedirect('../../../app/r/overview')
