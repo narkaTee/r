@@ -31,32 +31,81 @@ def examples(request):
         "app_label": request.service.apps[app_id].label,
         "samples": [
             {
-                "id": 'buildsimpletable',
-                "url": '| r "output=data.frame('
-                       'Name=c(\'A\',\'B\',\'C\'),'
-                       'Value=c(1,2,3)'
+                "id": 'creatematrix',
+                "url": '| r "output = data.frame('
+                       'a=c(1,2), '
+                       'b=c(2,8), '
+                       'c=c(4,16)'
                        ')"',
-                "name": "Generate a simple data table",
+                "name": "Create a Matrix",
                 "description": "This example doesn't receive data from a Splunk search. "
-                               "It just creates a small table with 2 columns (Name, Value) "
-                               "and 3 rows. "
-                               "After creating the table, it is returned to Splunk by assigning "
+                               "It just creates a simple matrix with 3 columns (a, b, c) "
+                               "and 2 rows. "
+                               "After creating the matrix, it is returned to Splunk by assigning "
                                "to the <code>output</code> variable."
             },
             {
-                "id": 'summaryinternalsources',
-                "url": 'index=_internal '
-                       '| head 1000 '
-                       '| table source '
-                       '| r "output=summary(input)"',
-                "name": "Summarize internal event sources"
+                "id": 'outputfieldnames',
+                "url": 'index=_internal earliest=-15m | r "output=colnames(input)"',
+                "name": "Output Field Names",
+                "description": "Run a search, and have R output the column names available in the input. "
+                               "Input from Splunk comes in as 'input' and you need to direct your results to "
+                               "'output' to get them back into Splunk."
             },
             {
-                "id": 'summarybabyname',
-                "url": '| babynames | '
-                       'table "First Name" '
-                       '| r "output=summary(input)"',
-                "name": "Summarize favorite baby names"
+                "id": 'CalculateIncomingLogVolume',
+                "url": 'index=_internal sourcetype=splunkd component=Metrics group=per_sourcetype_thruput '
+                       'earliest=-1h | r "output=sum(input$kb)"',
+                "name": "Calculate Incoming Log Volume",
+                "description": "Calculate the total incoming log volume using a search on the _internal index, "
+                               "and have R sum the 'kb' field."
+            },
+            {
+                "id": 'CalculateIncomingLogVolumeBySourceType',
+                "url": 'index=_internal sourcetype=splunkd component=Metrics group=per_sourcetype_thruput '
+                       'earliest=-1h | r "output=aggregate(input$kb, by=list(input$series), FUN=sum)"',
+                "name": "Calculate Incoming Log Volume by Source Type",
+                "description": "Do the same, but have R group by incoming sourcetype "
+                               "(available through the 'series' field)"
+            },
+            {
+                "id": 'CalculateGeometricMeanfromMatrixColumnValues',
+                "url": '| stats count as a |eval a=1 |eval b=2 |eval c=4\n'
+                       '| append [ |stats count as a |eval a=2 |eval b=8 | eval c=16 ]\n'
+                       '| r "\n'
+                       'gm_mean = function(x, na.rm=TRUE){\n'
+                       '   exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))\n'
+                       '}\n'
+                       'data <- data.matrix(input);\n'
+                       'output <- apply(data, 2, gm_mean)\n'
+                       '"',
+                "name": "Calculate Geometric Mean from Matrix Column Values",
+                "description": "First create this matrix with Splunk statements, "
+                               "then calculate the geometric mean of the column values."
+            },
+            {
+                "id": 'DeterminesunspotperiodicityusingFFT',
+                "url": '| inputlookup sunspots.csv\n'
+                       '| streamstats current=f last(Sunspots) as new window=2\n'
+                       '| eval Sunspots=Sunspots-new |fields - new\n'
+                       '| search Sunspots=*\n'
+                       '| r "\n'
+                       'output=transform(input, Power=(4/308)*(abs(fft(input$Sunspots))^2)[1:154], Freq=(0:153)/308)\n'
+                       '"\n'
+                       '| eval Power=if(Freq==0,0,Power)\n'
+                       '| eval Period=1/Freq\n'
+                       '| sort Period\n'
+                       '| table Period,Power',
+                "name": "Determine sunspot periodicity using FFT",
+                "description": "This can be done with a publicly available dataset that lists the sunspot activity "
+                               "from the year 1700 until now. The 'sunspots.csv' file is included in the app to "
+                               "play with. "
+                               "To apply FFT on this data, it needs to be detrended. This is done by calculating "
+                               "the difference in sunspots with the previous year. "
+                               "Then the fft() function is then applied to the Sunspots column, and the frequencies "
+                               "are converted back to cycles. This all leads to a chart with a huge spike around "
+                               "the 11 year period, indicating sunspots occur in a cycle with a length of around "
+                               "11 years."
             },
         ],
     }
