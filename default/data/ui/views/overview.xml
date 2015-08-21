@@ -1,5 +1,5 @@
 <dashboard>
-  <label>Overview</label>
+  <label>Home</label>
   <row>
     <html src="overview_introduction.html"/>
   </row>
