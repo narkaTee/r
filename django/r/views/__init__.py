@@ -251,26 +251,32 @@ def packages(request):
 
 @ajax_request
 def install_package(request):
-    if not request.user.is_authenticated():
-        return HttpResponseServerError('User not authenticated')
-    if not request.is_ajax():
-        return HttpResponseServerError('Is not a AJAX request')
-    if request.method != 'POST':
-        return HttpResponseServerError('Only POST is supported')
-
-    package_name = request.POST['package-name']
-
     try:
-        packagelib.install_package(request.service, package_name)
-    except packagelib.PackageInstallError as e:
+        if not request.user.is_authenticated():
+            raise Exception('User not authenticated')
+        if not request.is_ajax():
+            raise Exception('Is not a AJAX request')
+        if request.method != 'POST':
+            raise Exception('Only POST is supported')
+
+        package_name = request.POST['package-name']
+
+        try:
+            packagelib.install_package(request.service, package_name)
+        except packagelib.PackageInstallError as e:
+            return {
+                'state': packagelib.get_package_state(package_name),
+                'error': str(e)
+            }
+
         return {
             'state': packagelib.get_package_state(package_name),
+        }
+    except Exception as e:
+        return {
+            'state': packagelib.metadata_package_installation_error,
             'error': str(e)
         }
-
-    return {
-        'state': packagelib.get_package_state(package_name),
-    }
 
 
 @ajax_request
