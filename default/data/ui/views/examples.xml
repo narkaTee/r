@@ -1,0 +1,245 @@
+<dashboard>
+  <label>Examples</label>
+  <row>
+    <panel>
+      <title>Example - Generate a simple data table</title>
+      <html>
+      <p>This example doesn't receive data from a Splunk search. 
+        It just creates a small table with 2 columns (Name, Value) and 3 rows. 
+        After creating the table, it is returned to Splunk by assigning to the output variable.
+      </p>
+      <p>You can open the original search by clicking on the magnifiying glass when hovering over the results to the left.
+        </p>
+      <pre>
+| r "output = data.frame(Name=c('A','B','C'),Value=c(1,2,3))"
+</pre>
+    </html>
+    </panel>
+    <panel>
+      <title>Results</title>
+      <table>
+        <search>
+          <query>| r "output = data.frame(Name=c('A','B','C'),Value=c(1,2,3))"</query>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Example - Summarize internal event sources</title>
+      <html>
+      <pre>
+index=_internal | head 1000 | table source | r "output=summary(input)"
+</pre>
+    </html>
+    </panel>
+    <panel>
+      <title>Results</title>
+      <table>
+        <search>
+          <query>index=_internal | head 1000 | table source | r "output=summary(input)"</query>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Example - Summarize favorite baby names</title>
+      <html>
+      <pre>
+| babynames | table "First Name" | r "output=summary(input)"
+</pre>
+    </html>
+    </panel>
+    <panel>
+      <title>Results</title>
+      <table>
+        <search>
+          <query>| babynames | table "First Name" | r "output=summary(input)"</query>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Example - Incoming logvolume</title>
+      <html>
+        <p>Calculate the total incoming log volume from the last hour using a search on the _internal index,
+        and have R sum the "kb" field.
+        </p>
+      <pre>
+index=_internal sourcetype=splunkd component=Metrics group=per_sourcetype_thruput earliest=-1h
+|r "output=sum(input$kb)"
+</pre>
+    </html>
+    </panel>
+    <panel>
+      <title>Results</title>
+      <single>
+        <search>
+          <query>index=_internal sourcetype=splunkd component=Metrics group=per_sourcetype_thruput earliest=-1h |r "output=sum(input$kb)"</query>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="count">10</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Example - Incoming logvolume, by sourcetype</title>
+      <html>
+        <p>Calculate the incoming log volume by sourcetype from the last hour using a search on the _internal index,
+        and have R sum the "kb" field.
+        </p>
+      <pre>
+index=_internal sourcetype=splunkd component=Metrics group=per_sourcetype_thruput earliest=-1h
+|r "output=aggregate(input$kb, by=list(input$series), FUN=sum)"
+</pre>
+    </html>
+    </panel>
+    <panel>
+      <title>Results</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=splunkd component=Metrics group=per_sourcetype_thruput earliest=-1h |r "output=aggregate(input$$kb, by=list(input$$series), FUN=sum)"</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Example - geometric mean</title>
+      <html>
+        <p>
+          The first 2 lines in the search below create a simple 2x3 matrix,
+          followed by the geometric mean calculation in R using the column values.
+          If you want to calculate the geometric mean of the rows, change 2 -&gt; 1 in the apply() function
+        </p>
+      <pre>
+<![CDATA[
+|stats count as a |eval a=1 |eval b=2 |eval c=4
+|append [ |stats count as a |eval a=2 |eval b=8 | eval c=16 ]
+| r "
+     gm_mean = function(x, na.rm=TRUE){
+       exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+     }
+     data <- data.matrix(input);
+     output <- apply(data, 2, gm_mean)
+    "
+]]>
+</pre>     
+        Note that this search will fail when used in a panel, like the one on the right.
+        This is because R requires a newline after the function definition.
+        However, adding literal newlines to a panel search seems to be impossible to get right in Splunk,
+        so you'll have to add a semicolon instead, after the function definition.
+        However(2) a semicolon has special meaning, so HTML encode it to &amp;#59;.
+    </html>
+    </panel>
+    <panel>
+      <title>Results</title>
+      <table>
+        <search>
+          <query>|stats count as a |eval a=1 |eval b=2 |eval c=4 
+|append [ |stats count as a |eval a=2 |eval b=8 | eval c=16 ] 
+|r "gm_mean = function(x,na.rm=TRUE){exp(sum(log(x[x &gt; 0]), na.rm=na.rm) / length(x))}; data &lt;- data.matrix(input);output &lt;- apply(data, 2, gm_mean)"</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Example - Sunspot periodicity using FFT</title>
+      <html>
+        <p>
+         Sunspot periodicity can be calculated from a publicly available dataset
+          that lists the sunspot activity from the year 1700 until now. 
+          To apply FFT on this data, it needs to be detrended. 
+          This is done by calculating the difference in sunspots with the previous year. Enter streamstats. 
+          The fft() function is then applied to the Sunspots column, and the frequencies are converted back to cycles 
+        </p>
+        <p>This all leads to a chart with a huge spike around the 11 year period, 
+          indicating sunspots occur in a cycle with a length of around 11 years.
+        </p>
+      <pre>
+<![CDATA[
+| inputlookup sunspots.csv
+| r output="diff(input$Sunspots)"
+| rename x as Sunspots
+| r output="transform(input,Power=(4/308)*(abs(fft(input$Sunspots))^2)[1:154],Freq=(0:153)/308)"
+| eval Power=if(Freq==0,0,Power)
+| eval Period=1/Freq
+| sort Period
+| table Period,Power
+]]>
+</pre>
+    </html>
+    </panel>
+    <panel>
+      <title>Results</title>
+      <chart>
+        <search>
+          <query>| inputlookup sunspots.csv | r output="diff(input$$Sunspots)" | rename x as Sunspots | r output="transform(input,Power=(4/308)*(abs(fft(input$$Sunspots))^2)[1:154],Freq=(0:153)/308)" | eval Power=if(Freq==0,0,Power) | eval Period=1/Freq | sort Period | table Period,Power</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="count">10</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+      </chart>
+    </panel>
+  </row>
+</dashboard>
