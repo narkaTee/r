@@ -5,7 +5,7 @@ from splunkdj.decorators.render import render_to, ajax_request
 import os
 import sys
 bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bin')
-sys.path += bin_path
+sys.path.insert(1, bin_path)
 
 from ..forms import SetupForm
 from django.core.urlresolvers import reverse

@@ -8,7 +8,7 @@ from splunkdj.setup import forms
 
 # allow imports from bin directory
 bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bin')
-sys.path += bin_path
+sys.path.insert(1, bin_path)
 
 import r_framework as frameworklib
 
