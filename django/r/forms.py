@@ -10,7 +10,7 @@ from splunkdj.setup import forms
 bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'bin')
 sys.path += bin_path
 
-import framework as frameworklib
+import r_framework as frameworklib
 
 
 class RPathValidator(object):

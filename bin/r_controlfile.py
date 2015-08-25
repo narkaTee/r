@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# deb/controlfile.py - parse debian control files
+# deb/r_controlfile.py - parse debian control files
 #
 # Copyright © 2008 Canonical Ltd.
 # Author: Scott James Remnant <scott@ubuntu.com>.

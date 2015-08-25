@@ -1,5 +1,5 @@
 from test_config import ConfigTestCase
-import path
+import r_path
 
 temp_tempdir_segment = None
 
@@ -10,13 +10,13 @@ class PathTestCase(ConfigTestCase):
     def setUpClass(cls):
         ConfigTestCase.setUpClass()
         global temp_tempdir_segment
-        temp_tempdir_segment = path.tempdir_segment
-        path.tempdir_segment = 'r_test'
+        temp_tempdir_segment = r_path.tempdir_segment
+        r_path.tempdir_segment = 'r_test'
 
     @classmethod
     def tearDownClass(cls):
-        path.tempdir_segment = temp_tempdir_segment
+        r_path.tempdir_segment = temp_tempdir_segment
         ConfigTestCase.tearDownClass()
 
     def setUp(self):
-        path.delete_path_root()
+        r_path.delete_path_root()

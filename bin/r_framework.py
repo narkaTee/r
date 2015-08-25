@@ -1,5 +1,5 @@
 import os
-import config
+import r_config
 import subprocess
 import tempfile
 from r_errors import RError, InstallPackageError
@@ -27,7 +27,7 @@ def verify_r_path(r_path, raise_error):
 
 
 def exeute(service, script, library_path, scripts_path):
-    r_path = config.get_r_path(service)
+    r_path = r_config.get_r_path(service)
 
     # check if the R library is installed
     def raise_e_path_error(msg):
@@ -109,7 +109,7 @@ error=function(err) {
 
 
 def install_package(service, library_path, package_name, package_path):
-    r_path = config.get_r_path(service)
+    r_path = r_config.get_r_path(service)
 
     # check if the R library is installed
     def raise_e_path_error(msg):

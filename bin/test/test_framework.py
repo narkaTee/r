@@ -1,11 +1,11 @@
-import framework
+import r_framework
 from test_service import Service, Stanza
 from test_path import PathTestCase
 import tempfile
 import csv
 import os
-import scripts
-import packages
+import r_scripts
+import r_packages
 
 
 class FrameworkTestCase(PathTestCase):
@@ -20,11 +20,11 @@ class FrameworkTestCase(PathTestCase):
         try:
             script = 'output = data.frame(a=c(1,2,3))\n'
             script += 'write.csv(output, file = "' + output_csv_filename.replace('\\', '\\\\') + '")\n'
-            framework.exeute(
+            r_framework.exeute(
                 service,
                 script,
-                packages.get_library_path(),
-                scripts.get_custom_scripts_path(),
+                r_packages.get_library_path(),
+                r_scripts.get_custom_scripts_path(),
             )
             with open(output_csv_filename, 'r') as f:
                 reader = csv.reader(f)

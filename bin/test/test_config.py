@@ -1,5 +1,5 @@
 from unittest import TestCase
-import config
+import r_config
 from test_service import Service, Stanza
 import os
 
@@ -8,22 +8,22 @@ class ConfigTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        config.ignore_cache = True
+        r_config.ignore_cache = True
 
     @classmethod
     def tearDownClass(cls):
-        config.ignore_cache = False
+        r_config.ignore_cache = False
 
 
 class MyConfigTestCase(ConfigTestCase):
     def test_get_r_config_file(self):
         service = Service()
-        r_config_file = config.get_r_config_file(service)
+        r_config_file = r_config.get_r_config_file(service)
         self.assertIsNotNone(r_config_file)
 
     def test_get_r_path(self):
         service = Service()
-        r_path = config.get_r_path(service)
+        r_path = r_config.get_r_path(service)
         self.assertTrue(os.path.exists(r_path), 'invalid R path: %s' % r_path)
 
     def test_iter_stanzas(self):
@@ -33,7 +33,7 @@ class MyConfigTestCase(ConfigTestCase):
             Stanza('script://test3', {}),
         ])
         cnt = 0
-        for stanza, name in config.iter_stanzas(service, 'script'):
+        for stanza, name in r_config.iter_stanzas(service, 'script'):
             self.assertTrue(name.startswith('test'))
             self.assertTrue(stanza.name.startswith('script://'))
             cnt += 1
@@ -45,11 +45,11 @@ class MyConfigTestCase(ConfigTestCase):
             Stanza('package://test2', {}),
             Stanza('script://test3', {}),
         ])
-        config.create_stanza(service, 'test', 'test4', {
+        r_config.create_stanza(service, 'test', 'test4', {
             'a': 'b'
         })
         cnt = 0
-        for stanza, name in config.iter_stanzas(service, 'test'):
+        for stanza, name in r_config.iter_stanzas(service, 'test'):
             self.assertEqual(cnt, 0)
             cnt += 1
             self.assertEqual(getattr(stanza, 'a'), 'b')
@@ -60,12 +60,12 @@ class MyConfigTestCase(ConfigTestCase):
             Stanza('package://test2', {}),
             Stanza('script://test3', {}),
         ])
-        config.delete_stanza(service, 'script', 'test3')
-        config.delete_stanza(service, 'script', 'test1')
-        for _ in config.iter_stanzas(service, 'script'):
+        r_config.delete_stanza(service, 'script', 'test3')
+        r_config.delete_stanza(service, 'script', 'test1')
+        for _ in r_config.iter_stanzas(service, 'script'):
             self.fail('No stanza should be found')
         cnt = 0
-        for stanza, name in config.iter_stanzas(service, 'package'):
+        for stanza, name in r_config.iter_stanzas(service, 'package'):
             self.assertEqual('package://test2', stanza.name)
             cnt += 1
         self.assertEqual(1, cnt)

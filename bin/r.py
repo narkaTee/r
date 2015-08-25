@@ -5,19 +5,19 @@ import os
 import traceback
 import sys
 from StringIO import StringIO
-import scripts
-import packages
-import framework
+import r_scripts
+import r_packages
+import r_framework
 import r_errors
 import re
 import shutil
 import uuid
-import index_logging
-import config
+import r_index_logging
+import r_config
 
 
 def log(fields):
-    index_logging.log(__file__, fields)
+    r_index_logging.log(__file__, fields)
 
 
 def r(service, events, command_argument, fieldnames=None):
@@ -46,8 +46,8 @@ def r(service, events, command_argument, fieldnames=None):
         })
 
     # installing prerequirements
-    scripts.create_files(service)
-    packages.update_library(service)
+    r_scripts.create_files(service)
+    r_packages.update_library(service)
 
     input_csv_filename = None
     output_csv_filename = None
@@ -112,11 +112,11 @@ def r(service, events, command_argument, fieldnames=None):
 
         script += 'write.csv(library.usage, file = "' + output_library_usage_csv_filename.replace('\\', '\\\\') + '")\n'
 
-        framework.exeute(
+        r_framework.exeute(
             service,
             script,
-            packages.get_library_path(),
-            scripts.get_custom_scripts_path(),
+            r_packages.get_library_path(),
+            r_scripts.get_custom_scripts_path(),
         )
 
         # read library usage
@@ -189,7 +189,7 @@ def main():
 
     import splunk.Intersplunk
 
-    from utils import get_service, read_fieldnames_from_command_input
+    from r_utils import get_service, read_fieldnames_from_command_input
 
     try:
         # check execution mode: it could be 'getinfo' to get some information about

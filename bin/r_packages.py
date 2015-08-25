@@ -1,16 +1,16 @@
-import path
+import r_path
 import os
 import urllib2
-import framework
-import config
+import r_framework
+import r_config
 import r_errors
 from sys import platform as _platform
 import shutil
 import re
-from controlfile import ControlFile
-import lockfile
+from r_controlfile import ControlFile
+import r_lockfile
 from splunklib.binding import HTTPError
-import index_logging
+import r_index_logging
 
 
 scheme = 'package'
@@ -34,29 +34,29 @@ metadata_package_value_set.add(metadata_package_not_installed)
 
 
 def log(fields):
-    index_logging.log(__file__, fields)
+    r_index_logging.log(__file__, fields)
 
 
 def get_packages_path():
-    return path.get_directory('packages')
+    return r_path.get_directory('packages')
 
 
 def get_library_path():
-    return path.get_directory('library')
+    return r_path.get_directory('library')
 
 
 def get_packages_metadata_path():
-    return path.get_directory('metadata', 'packages')
+    return r_path.get_directory('metadata', 'packages')
 
 
 def lock_packages_and_library():
-    lock_file_path = path.get_file('packages_and_library.lock')
-    return lockfile.file_lock(lock_file_path)
+    lock_file_path = r_path.get_file('packages_and_library.lock')
+    return r_lockfile.file_lock(lock_file_path)
 
 
 def lock_metadata():
-    lock_file_path = path.get_file('metadata.lock')
-    return lockfile.file_lock(lock_file_path)
+    lock_file_path = r_path.get_file('metadata.lock')
+    return r_lockfile.file_lock(lock_file_path)
 
 
 class PackageInstallError(r_errors.Error):
@@ -381,7 +381,7 @@ def install_package(service, name):
                 })
                 _update_package_state(name, metadata_package_installing)
                 try:
-                    framework.install_package(service, library_path, name, archive_path)
+                    r_framework.install_package(service, library_path, name, archive_path)
                 except r_errors.InstallPackageError as install_error:
                     raise PackageInstallError(name, install_error.message)
                 except Exception as e:
@@ -432,7 +432,7 @@ def dependent_package_names(name):
 
 def all_package_names(service):
     yielded_names = set()
-    for _, package_name in config.iter_stanzas(service, scheme):
+    for _, package_name in r_config.iter_stanzas(service, scheme):
         yielded_names.add(package_name)
         for dependent_package_name in dependent_package_names(package_name):
             yielded_names.add(dependent_package_name)
@@ -443,7 +443,7 @@ def update_library(service):
     with lock_packages_and_library():
 
         # download required package archives
-        for stanza, package_name in config.iter_stanzas(service, scheme):
+        for stanza, package_name in r_config.iter_stanzas(service, scheme):
             install_package(service, package_name)
 
         # collect files that should be present
@@ -479,11 +479,11 @@ def update_library(service):
 
 
 def iter_stanzas(service):
-    return config.iter_stanzas(service, scheme)
+    return r_config.iter_stanzas(service, scheme)
 
 
 def can_add(service):
-    config_file = config.get_r_config_file(service)
+    config_file = r_config.get_r_config_file(service)
     try:
         return config_file.itemmeta()['access']['can_write'] == '1'
     except HTTPError:
@@ -491,9 +491,9 @@ def can_add(service):
 
 
 def add(service, name):
-    config.create_stanza(service, scheme, name, {
+    r_config.create_stanza(service, scheme, name, {
     })
 
 
 def remove(service, name):
-    config.delete_stanza(service, scheme, name)
+    r_config.delete_stanza(service, scheme, name)

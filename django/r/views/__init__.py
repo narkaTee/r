@@ -15,8 +15,8 @@ from splunkdj.setup import create_setup_view_context
 
 # the following imports require the path to bin directory
 import r_errors
-import scripts as scriptlib
-import packages as packagelib
+import r_scripts as scriptlib
+import r_packages as packagelib
 
 app_id = "r"
 

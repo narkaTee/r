@@ -1,7 +1,7 @@
 from test_service import Service, Stanza
 from test_path import PathTestCase
 from r import r
-import scripts as scriptlib
+import r_scripts as scriptlib
 
 class RTestCase(PathTestCase):
     def test_r(self):
@@ -25,8 +25,8 @@ class RTestCase(PathTestCase):
         self.assertEqual(rows[0]['Name'], 'Robert')
 
     def test_r_package_usage(self):
-        import index_logging
-        index_logging.clear_log_entries()
+        import r_index_logging
+        r_index_logging.clear_log_entries()
 
         service = Service([
             Stanza('package://race', {}),
@@ -38,7 +38,7 @@ class RTestCase(PathTestCase):
         library(race)
         output = data.frame(h1=c('v1'))
         ''')
-        indexed_events = index_logging.get_log_entries()
+        indexed_events = r_index_logging.get_log_entries()
 
         def is_indexed(text):
             for e in indexed_events:
@@ -51,8 +51,8 @@ class RTestCase(PathTestCase):
         self.assertTrue(is_indexed('package_name=\"boot\"'))
 
     def test_r_package_usage_from_custom_script(self):
-        import index_logging
-        index_logging.clear_log_entries()
+        import r_index_logging
+        r_index_logging.clear_log_entries()
 
         service = Service([
             Stanza('package://race', {}),
@@ -68,7 +68,7 @@ class RTestCase(PathTestCase):
         output = data.frame(Result=c(result))
         """)
         _, rows = r(service, None, 'test.r')
-        indexed_events = index_logging.get_log_entries()
+        indexed_events = r_index_logging.get_log_entries()
 
         def is_indexed(text):
             for e in indexed_events:

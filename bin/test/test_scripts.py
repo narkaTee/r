@@ -1,7 +1,7 @@
 from test_service import Service, Stanza
 from test_path import PathTestCase
 import os
-import scripts
+import r_scripts
 import time
 
 
@@ -13,20 +13,20 @@ class ScriptsTestCase(PathTestCase):
                            'WRkKDQsMjAwKQ0Kb3V0cHV0ID0gZGF0YS5mcmFtZShSZXN1bHQ9YyhyZXN1bHQpKQ==',
             }),
         ])
-        scripts.create_files(service)
-        installed_scripts = os.listdir(scripts.get_custom_scripts_path())
+        r_scripts.create_files(service)
+        installed_scripts = os.listdir(r_scripts.get_custom_scripts_path())
         self.assertEqual(len(installed_scripts), 1)
         self.assertEqual(installed_scripts[0], 'test.r')
 
-        mtime = os.path.getmtime(os.path.join(scripts.get_custom_scripts_path(), installed_scripts[0]))
-        scripts.create_files(service)
+        mtime = os.path.getmtime(os.path.join(r_scripts.get_custom_scripts_path(), installed_scripts[0]))
+        r_scripts.create_files(service)
         self.assertEqual(
             mtime,
-            os.path.getmtime(os.path.join(scripts.get_custom_scripts_path(), installed_scripts[0]))
+            os.path.getmtime(os.path.join(r_scripts.get_custom_scripts_path(), installed_scripts[0]))
         )
 
         time.sleep(1.5)
-        scripts.add(service, 'test', """
+        r_scripts.add(service, 'test', """
 add <- function(a,b) {
   c = a+b
   return(c)
@@ -35,18 +35,18 @@ result = add(4,10)
 output = data.frame(Result=c(result))
         """)
         time.sleep(1.5)
-        scripts.create_files(service)
-        installed_scripts = os.listdir(scripts.get_custom_scripts_path())
+        r_scripts.create_files(service)
+        installed_scripts = os.listdir(r_scripts.get_custom_scripts_path())
         self.assertEqual(len(installed_scripts), 1)
         self.assertEqual(installed_scripts[0], 'test.r')
 
         self.assertNotEqual(
             mtime,
-            os.path.getmtime(os.path.join(scripts.get_custom_scripts_path(), installed_scripts[0]))
+            os.path.getmtime(os.path.join(r_scripts.get_custom_scripts_path(), installed_scripts[0]))
         )
-        mtime = os.path.getmtime(os.path.join(scripts.get_custom_scripts_path(), installed_scripts[0]))
-        scripts.create_files(service)
+        mtime = os.path.getmtime(os.path.join(r_scripts.get_custom_scripts_path(), installed_scripts[0]))
+        r_scripts.create_files(service)
         self.assertEqual(
             mtime,
-            os.path.getmtime(os.path.join(scripts.get_custom_scripts_path(), installed_scripts[0]))
+            os.path.getmtime(os.path.join(r_scripts.get_custom_scripts_path(), installed_scripts[0]))
         )
