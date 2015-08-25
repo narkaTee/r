@@ -31,52 +31,6 @@
   </row>
   <row>
     <panel>
-      <title>Example - Summarize internal event sources</title>
-      <html>
-      <pre>
-index=_internal | head 1000 | table source | r "output=summary(input)"
-</pre>
-    </html>
-    </panel>
-    <panel>
-      <title>Results</title>
-      <table>
-        <search>
-          <query>index=_internal | head 1000 | table source | r "output=summary(input)"</query>
-        </search>
-        <option name="wrap">true</option>
-        <option name="rowNumbers">false</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">cell</option>
-        <option name="count">10</option>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>Example - Summarize favorite baby names</title>
-      <html>
-      <pre>
-| babynames | table "First Name" | r "output=summary(input)"
-</pre>
-    </html>
-    </panel>
-    <panel>
-      <title>Results</title>
-      <table>
-        <search>
-          <query>| babynames | table "First Name" | r "output=summary(input)"</query>
-        </search>
-        <option name="wrap">true</option>
-        <option name="rowNumbers">false</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">cell</option>
-        <option name="count">10</option>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
       <title>Example - Incoming logvolume</title>
       <html>
         <p>Calculate the total incoming log volume from the last hour using a search on the _internal index,
