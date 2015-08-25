@@ -10,6 +10,8 @@ import re
 from controlfile import ControlFile
 import lockfile
 from splunklib.binding import HTTPError
+import index_logging
+
 
 scheme = 'package'
 
@@ -29,6 +31,10 @@ metadata_package_value_set.add(metadata_package_downloading)
 metadata_package_value_set.add(metadata_package_installing_dependencies)
 metadata_package_value_set.add(metadata_package_installation_error)
 metadata_package_value_set.add(metadata_package_not_installed)
+
+
+def log(fields):
+    index_logging.log(__file__, fields)
 
 
 def get_packages_path():
@@ -248,17 +254,44 @@ def get_package_dependencies(package_name, description_path):
 
 
 def download_package(package_name, package_path, package_url):
+    def log_download_package(fields):
+        log_fields = {
+            'action': 'download_package',
+            'package_name': package_name,
+            'package_path': package_path,
+            'package_url': package_url,
+            }
+        log_fields.update(fields)
+        log(log_fields)
+    log_download_package({
+        'phase': 'pre',
+        })
     try:
         package_data = urllib2.urlopen(package_url).read()
     except urllib2.HTTPError as http_error:
+        log_download_package({
+            'phase': 'post',
+            'error': str(http_error),
+            })
         raise ArchiveDownloadError(package_name, package_url, str(http_error))
     except urllib2.URLError as url_error:
+        log_download_package({
+            'phase': 'post',
+            'error': url_error.reason,
+            })
         raise ArchiveDownloadError(package_name, package_url, url_error.reason)
     try:
         with open(package_path, 'wb') as f:
             f.write(package_data)
     except Exception as e:
+        log_download_package({
+            'phase': 'post',
+            'error': 'Unable to save file',
+            })
         raise ArchiveSaveError(package_name, e)
+    log_download_package({
+        'phase': 'post',
+        })
 
 
 def get_metadata_package_state_filename(package_name):
@@ -301,6 +334,13 @@ def get_package_state(package_name):
 
 
 def install_package(service, name):
+    def inner_log(fields):
+        log_fields = {
+            'action': 'install_package',
+            'package_name': name
+            }
+        log_fields.update(fields)
+        log(log_fields)
     with lock_packages_and_library():
 
         # check if packages is already installed or currently installing
@@ -316,6 +356,9 @@ def install_package(service, name):
             packages_path = get_packages_path()
             archive_path = os.path.join(packages_path, archive_name)
             if not os.path.exists(archive_path):
+                inner_log({
+                    'phase': 'downloading'
+                })
                 _update_package_state(name, metadata_package_downloading)
                 lines = get_package_description_lines(name)
                 version = get_package_version(name, lines)
@@ -325,11 +368,17 @@ def install_package(service, name):
                 except ArchiveDownloadError:
                     package_url = get_remote_package_url(name, version, force_source=True)
                     download_package(name, archive_path, package_url)
+                inner_log({
+                    'phase': 'downloaded'
+                })
 
             # install package if required
             library_path = get_library_path()
             library_package_path = os.path.join(library_path, name)
             if not os.path.exists(library_package_path):
+                inner_log({
+                    'phase': 'installing'
+                })
                 _update_package_state(name, metadata_package_installing)
                 try:
                     framework.install_package(service, library_path, name, archive_path)
@@ -337,8 +386,14 @@ def install_package(service, name):
                     raise PackageInstallError(name, install_error.message)
                 except Exception as e:
                     raise PackageInstallError(name, str(e))
+                inner_log({
+                    'phase': 'installed'
+                })
 
             # check dependencies
+            inner_log({
+                'phase': 'checking_dependencies'
+            })
             description_path = os.path.join(library_package_path, 'DESCRIPTION')
             dependencies = get_package_dependencies(name, description_path)
             if len(dependencies) > 0:
@@ -348,6 +403,9 @@ def install_package(service, name):
                         install_package(service, dependent_package_name)
                     except Exception as e:
                         raise DependendPackageError(name, dependent_package_name, e)
+            inner_log({
+                'phase': 'done'
+            })
 
             installed = True
         finally:

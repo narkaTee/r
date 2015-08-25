@@ -39,11 +39,16 @@ class RTestCase(PathTestCase):
         output = data.frame(h1=c('v1'))
         ''')
         indexed_events = index_logging.get_log_entries()
-        self.assertEqual(len(indexed_events), 4)
-        self.assertTrue('action=\"package_usage\"' in indexed_events[1])
-        self.assertTrue('package_name=\"race\"' in indexed_events[1])
-        self.assertTrue('action=\"package_usage\"' in indexed_events[2])
-        self.assertTrue('package_name=\"boot\"' in indexed_events[2])
+
+        def is_indexed(text):
+            for e in indexed_events:
+                if text in e:
+                    return True
+            return False
+        self.assertTrue(is_indexed('action=\"package_usage\"'))
+        self.assertTrue(is_indexed('package_name=\"race\"'))
+        self.assertTrue(is_indexed('action=\"package_usage\"'))
+        self.assertTrue(is_indexed('package_name=\"boot\"'))
 
     def test_r_package_usage_from_custom_script(self):
         import index_logging
@@ -64,6 +69,11 @@ class RTestCase(PathTestCase):
         """)
         _, rows = r(service, None, 'test.r')
         indexed_events = index_logging.get_log_entries()
-        self.assertEqual(len(indexed_events), 3)
-        self.assertTrue('action=\"package_usage\"' in indexed_events[1])
-        self.assertTrue('package_name=\"race\"' in indexed_events[1])
+
+        def is_indexed(text):
+            for e in indexed_events:
+                if text in e:
+                    return True
+            return False
+        self.assertTrue(is_indexed('action=\"package_usage\"'))
+        self.assertTrue(is_indexed('package_name=\"race\"'))
