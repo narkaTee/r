@@ -54,8 +54,8 @@ def main():
                 req_fields=None
             )
 
-        #read command arguments
-        #keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
+        # read command arguments
+        # keywords, kvs = splunk.Intersplunk.getKeywordsAndOptions()
         if len(sys.argv) != 1:
             raise Exception("No parameter allowed")
 
@@ -63,7 +63,7 @@ def main():
         settings = {}
         splunk.Intersplunk.readResults(sys.stdin, settings)
 
-        #connect to splunk using SDK
+        # connect to splunk using SDK
         service = get_service(settings['infoPath'])
 
         r_stats(service)
