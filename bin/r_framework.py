@@ -3,6 +3,11 @@ import r_config
 import subprocess
 import tempfile
 from r_errors import RError, InstallPackageError
+import r_index_logging
+
+
+def log(fields):
+    r_index_logging.log(__file__, fields)
 
 
 def verify_r_path(r_path, raise_error):
@@ -109,27 +114,74 @@ error=function(err) {
 
 
 def install_package(service, library_path, package_name, package_path):
+    def inner_log(fields):
+        log_fields = {
+            'action': 'framework_install_package',
+            'library_path': library_path,
+            'package_name': package_name,
+            'package_path': package_path,
+            }
+        log_fields.update(fields)
+        log(log_fields)
+
+    inner_log({
+        'phase': 'pre',
+        })
+
     r_path = r_config.get_r_path(service)
+
+    inner_log({
+        'phase': 'check',
+        'r_path': r_path,
+        })
 
     # check if the R library is installed
     def raise_e_path_error(msg):
         raise InstallPackageError(package_name, msg)
     verify_r_path(r_path, raise_e_path_error)
 
-    # dont't install if the package already exists in library
+    inner_log({
+        'phase': 'verified',
+        })
+
+    # don't install if the package already exists in library
     library_package_path = os.path.join(library_path, package_name)
     if os.path.exists(library_package_path):
         raise InstallPackageError(package_name, 'Already installed')
 
-    command = "\"" + r_path + "\" CMD INSTALL -l \"" + library_path + "\" \"" + package_path + "\""
+    inner_log({
+        'phase': 'test',
+        })
+
+    r_path = "C:\\Program Files\\R\\R-3.0.3\\bin\\x64\\Rcmd.exe"
+    command = "\"" + r_path + "\" INSTALL -l \"" + library_path + "\" \"" + package_path + "\""
+
+    inner_log({
+        'phase': 'spawn1',
+        'command': command,
+        })
+
     process = subprocess.Popen(
         command,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         shell=True
     )
+
+    inner_log({
+        'phase': 'spawn2'
+        })
+
     _, output = process.communicate()
+
+    inner_log({
+        'phase': 'spawn3'
+        })
 
     # package directory doesn't exists after installation?
     if not os.path.exists(library_package_path):
         raise InstallPackageError(package_name, output)
+
+    inner_log({
+        'phase': 'post',
+        })
