@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Cd to deploy directory
 cd "$(dirname "$0")"
@@ -7,14 +7,16 @@ cd "$(dirname "$0")"
 rm r.spl
 
 # Increase build number
-let BUILD=`cat .build`
-let BUILD=BUILD+1
+BUILD=`cat .build`
+BUILD=$(($BUILD+1))
 echo $BUILD > .build
 
 # Ask for new version number
 VERSION=`cat .version`
 read -p "Version ($VERSION): " NEW_VERSION
-[[ ! -z "$NEW_VERSION" ]] && VERSION="$NEW_VERSION"
+if [ ! -z "$NEW_VERSION" ]; then
+	VERSION="$NEW_VERSION"
+fi
 echo $VERSION > .version
 
 # Update app config
