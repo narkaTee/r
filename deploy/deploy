@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Cd to deploy directory
 cd "$(dirname "$0")"
